@@ -3,42 +3,41 @@
 export type Bitmap = HTMLImageElement | HTMLCanvasElement;
 
 
-const stringTableToColorTable = (strTable : string[]) : number[][] => {
+const unpackPalette = (palette : string[]) : number[][] => {
 
     let out = new Array<number[]> ();
     let len : number;
 
-    for (let j = 0; j < strTable.length; ++ j) {
+    for (let j = 0; j < palette.length; ++ j) {
 
-        len = (strTable[j].length/2) | 0;
+        len = (palette[j].length/2) | 0;
         out.push(new Array<number> (len));
         for (let i = 0; i < len; ++ i) {
 
-            out[i].push(parseInt(strTable[j].substring(i*2, i*2 + 2), 16));
+            out[j][i] = parseInt(palette[j].substring(i*2, i*2 + 2), 16);
         }
     }
-
     return out;
 }   
 
 
-const convertTile = (data : ImageData, 
+const convertTile = (imageData : ImageData, 
     dx : number, dy : number, dw : number, dh : number, offset : number,
-    palette : number[][]) : void => {
+    colorTable : number[], palette : number[][]) : void => {
 
-    let color : number[];
+    let paletteEntry : number[];
     let i : number;
 
-    for (let y = dy; y < y + dh; ++ y) {
+    for (let y = dy; y < dy + dh; ++ y) {
 
         for (let x = dx; x < dx + dw; ++ x) {
 
             i = y * offset + x;
-            color = palette[(data[i*4] / 85) | 0];
-            
+            paletteEntry = palette[colorTable[(imageData.data[i*4] / 85) | 0]];
+
             for (let j = 0; j < 4; ++ j) {
 
-                data.data[i*4 + j] = color[j];
+                imageData.data[i*4 + j] = paletteEntry[j];
             }
         }
     }
@@ -46,7 +45,9 @@ const convertTile = (data : ImageData,
 
 
 export const processFourColorBitmap = (image : HTMLImageElement,
-    gridWidth : number, gridHeight : number, paletteLookup : string[][]) : Bitmap => {
+    gridWidth : number, gridHeight : number, 
+    startLine : number, endLine : number,
+    colorTables: string[], packedPalette : string[]) : Bitmap => {
 
     let canvas = document.createElement("canvas");
     let ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
@@ -56,7 +57,7 @@ export const processFourColorBitmap = (image : HTMLImageElement,
 
     ctx.drawImage(image, 0, 0);
 
-    let data = ctx.getImageData(0, 0, image.width, image.height);
+    let imageData = ctx.getImageData(0, 0, image.width, image.height);
 
     let w = (canvas.width / gridWidth) | 0;
     let h = (canvas.height / gridHeight) | 0;
@@ -65,17 +66,25 @@ export const processFourColorBitmap = (image : HTMLImageElement,
     let imgWidth = image.width;
     // let imgHeight = image.height;
 
-    let colorTable = paletteLookup.map(s => stringTableToColorTable(s));
+    let colorTable : number[];
+    let palette = unpackPalette(packedPalette);
 
-    for (let y = 0; y < h; ++ y) {
+    console.log(palette);
+
+    let j = 0;
+    for (let y = Math.max(0, startLine); y < Math.min(y + h, endLine + 1); ++ y) {
 
         for (let x = 0; x < w; ++ x) {
-
-            convertTile(data, 
+            
+            colorTable = colorTables[j].split("").map((s : string) => parseInt(s, 32));
+            convertTile(imageData, 
                 x*gridWidth, y*gridWidth, gridWidth, gridHeight, 
-                imgWidth, colorTable[y*w + x]);
+                imgWidth, colorTable, palette);
+
+            ++ j;
         }
     }
+    ctx.putImageData(imageData, 0, 0);
 
     return canvas as Bitmap;
 } 

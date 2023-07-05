@@ -1,3 +1,4 @@
+import { Bitmap } from "./bitmap.js";
 
 
 const createCanvasElement = (width : number, height : number) : [HTMLCanvasElement, CanvasRenderingContext2D] => {
@@ -9,6 +10,13 @@ const createCanvasElement = (width : number, height : number) : [HTMLCanvasEleme
 
     canvas = document.createElement("canvas");
     canvas.setAttribute("style", styleArg);
+    canvas.setAttribute(
+        "style", 
+        "position: absolute; top: 0; left: 0; z-index: -1;" + 
+        "image-rendering: optimizeSpeed;" + 
+        "image-rendering: pixelated;" +
+        "image-rendering: -moz-crisp-edges;");
+
     canvas.width = width;
     canvas.height = height;
 
@@ -48,6 +56,8 @@ export class Canvas {
     private canvas : HTMLCanvasElement;
     private ctx : CanvasRenderingContext2D;
 
+    private fetchBitmapCallback : ((name : string) => Bitmap) | undefined = undefined;
+
 
     public get width() : number {
 
@@ -62,6 +72,7 @@ export class Canvas {
     constructor(width : number, height : number) {
 
         [this.canvas, this.ctx] = createCanvasElement(width, height);
+        this.ctx.imageSmoothingEnabled = false;
 
         window.addEventListener("resize", () => {
 
@@ -85,6 +96,12 @@ export class Canvas {
     }
 
 
+    public setFetchBitmapCallback(fetchBitmapCallback? : ((name : string) => Bitmap)) {
+
+        this.fetchBitmapCallback = fetchBitmapCallback;
+    }
+
+
     public clear(colorStr : string) : void {
 
         let c = this.ctx;
@@ -92,4 +109,22 @@ export class Canvas {
         c.fillStyle = colorStr;
         c.fillRect(0, 0, this.width, this.height);
     }
+
+
+    public drawBitmap(bmp : Bitmap | undefined, dx : number, dy : number, 
+        sx = 0, sy = 0, sw = bmp.width, sh = bmp.height) : void {
+
+        let c = this.ctx;
+
+        if (bmp == undefined)
+            return;
+
+        sw |= 0;
+        sh |= 0;
+
+        c.drawImage(bmp, sx | 0, sy | 0, sw, sh, dx | 0, dy | 0, sw, sh);
+    }
+
+
+    public getBitmap = (name : string) : Bitmap | undefined => this.fetchBitmapCallback(name);
 }

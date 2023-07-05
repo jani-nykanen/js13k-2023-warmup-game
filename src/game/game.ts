@@ -2,6 +2,7 @@ import { CoreEvent } from "../core/event.js";
 import { Program } from "../core/program.js";
 import { Canvas } from "../renderer/canvas.js";
 import { rgb } from "../renderer/color.js";
+import { loadAndProcessBitmaps } from "./assets.js"
 
 
 export class Game implements Program {
@@ -9,7 +10,7 @@ export class Game implements Program {
 
     constructor(event : CoreEvent) {
 
-        console.log("Lol");
+        loadAndProcessBitmaps(event);
     }
 
 
@@ -31,6 +32,8 @@ export class Game implements Program {
     public redraw(canvas : Canvas) : void {
 
         canvas.clear(rgb(85, 170, 255));
+
+        canvas.drawBitmap(canvas.getBitmap("test"), 16, 16);
     }
 
 }

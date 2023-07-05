@@ -21,8 +21,8 @@ export class Core {
     constructor(canvasWidth : number, canvasHeight : number, 
         physicsStep : number, actions : ActionMap) {
 
-        this.event = new CoreEvent(physicsStep, actions);
         this.canvas = new Canvas(canvasWidth, canvasHeight);
+        this.event = new CoreEvent(physicsStep, actions, this.canvas);
     }
 
 
@@ -32,29 +32,38 @@ export class Core {
         const FRAME_TIME = 16.66667;
 
         const delta = Math.min(ts - this.oldTime, FRAME_TIME * MAX_REFRESH_COUNT);
+        const loaded = this.event.hasLoaded();
 
         this.event.setDelta(delta);
 
         this.timeSum += delta;
         this.oldTime = ts;
 
-        // TODO: Call this after everything is loaded
-        if (!this.initialized) {
+        if (loaded && !this.initialized) {
 
             this.mainProgram?.init(this.event);
             this.initialized = false;
         }
 
-        this.mainProgram?.update(this.event);
+        if (loaded) 
+            this.mainProgram?.update(this.event);
 
         for (; this.timeSum >= FRAME_TIME; this.timeSum -= FRAME_TIME) {
 
-            this.mainProgram?.updatePhysics(this.event);
+            if (loaded) 
+                this.mainProgram?.updatePhysics(this.event);
         }
         this.event.input.update();
         
-        this.canvas.clear(rgb(170, 170, 170)); // TODO: Remove
-        this.mainProgram?.redraw(this.canvas);
+        if (loaded) {
+            
+            this.mainProgram?.redraw(this.canvas);
+        }
+        else {
+
+            // TODO: Loading text?
+            this.canvas.clear(rgb(0, 85, 170));
+        }
 
         window.requestAnimationFrame(ts => this.loop(ts));
     }
