@@ -56,6 +56,8 @@ export class Canvas {
     private canvas : HTMLCanvasElement;
     private ctx : CanvasRenderingContext2D;
 
+    private flipFlag : Flip = Flip.None;
+
     private fetchBitmapCallback : ((name : string) => Bitmap) | undefined = undefined;
 
 
@@ -122,9 +124,45 @@ export class Canvas {
         sw |= 0;
         sh |= 0;
 
+        if (this.flipFlag != Flip.None) {
+            c.save();
+        }
+
+        if ((this.flipFlag & Flip.Horizontal) != 0) {
+
+            c.translate(sw, 0);
+            c.scale(-1, 1);
+            dx *= -1;
+        }
+        if ((this.flipFlag & Flip.Vertical) != 0) {
+
+            c.translate(0, sh);
+            c.scale(1, -1);
+            dy *= -1;
+        }
+
         c.drawImage(bmp, sx | 0, sy | 0, sw, sh, dx | 0, dy | 0, sw, sh);
+
+        if (this.flipFlag != Flip.None) {
+
+            c.restore();
+        }
     }
 
 
     public getBitmap = (name : string) : Bitmap | undefined => this.fetchBitmapCallback(name);
+
+
+    public setFlag(flag : "flip", value : Flip) : void {
+
+        switch (flag) {
+
+        case "flip":
+            this.flipFlag = value as Flip;
+            break;
+
+        default:
+            break;
+        }
+    }
 }

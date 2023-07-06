@@ -1,6 +1,6 @@
 import { CoreEvent } from "../core/event.js";
 import { Program } from "../core/program.js";
-import { Canvas } from "../renderer/canvas.js";
+import { Canvas, Flip } from "../renderer/canvas.js";
 import { rgb } from "../renderer/color.js";
 import { loadAndProcessBitmaps } from "./assets.js"
 
@@ -33,6 +33,7 @@ export class Game implements Program {
 
         canvas.clear(rgb(85, 170, 255));
 
+        canvas.setFlag("flip", Flip.Both);
         canvas.drawBitmap(canvas.getBitmap("test"), 16, 16);
     }
 

@@ -69,8 +69,6 @@ export const processFourColorBitmap = (image : HTMLImageElement,
     let colorTable : number[];
     let palette = unpackPalette(packedPalette);
 
-    console.log(palette);
-
     let j = 0;
     for (let y = Math.max(0, startLine); y < Math.min(y + h, endLine + 1); ++ y) {
 
