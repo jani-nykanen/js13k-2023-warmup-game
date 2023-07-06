@@ -15,6 +15,8 @@ export class CoreEvent {
     private loadCount : number = 0;
     private loaded : number = 0;
 
+    private readonly canvas : Canvas;
+
     public readonly input : Input;
 
 
@@ -30,6 +32,18 @@ export class CoreEvent {
     }
 
 
+    public get screenWidth() : number {
+
+        return this.canvas.width;
+    }
+
+
+    public get screenHeight() : number {
+
+        return this.canvas.height;
+    }
+
+
     constructor(physicsStep : number, actions : ActionMap, canvas : Canvas) {
 
         this.input = new Input(actions);
@@ -41,6 +55,8 @@ export class CoreEvent {
 
             return this.bitmaps.get(name);
         });
+
+        this.canvas = canvas;
     }
 
 

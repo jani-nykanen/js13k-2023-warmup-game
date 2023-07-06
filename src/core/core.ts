@@ -28,13 +28,13 @@ export class Core {
 
     private loop(ts : number) : void {
 
-        const MAX_REFRESH_COUNT = 5; // Needed in the case that window gets deactivate and reactivated much later
+        const MAX_REFRESH_COUNT = 5; // Needed in the case that window gets deactivated and reactivated much later
         const FRAME_TIME = 16.66667;
 
         const delta = Math.min(ts - this.oldTime, FRAME_TIME * MAX_REFRESH_COUNT);
         const loaded = this.event.hasLoaded();
 
-        this.event.setDelta(delta);
+        this.event.setDelta(delta / 1000.0);
 
         this.timeSum += delta;
         this.oldTime = ts;

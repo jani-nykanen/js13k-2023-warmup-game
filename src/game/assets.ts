@@ -15,7 +15,7 @@ const COLOR_TABLE_1 = [
 
 export const loadAndProcessBitmaps = (event : CoreEvent) : void => {
 
-    const PATH = "test_image.png";
+    const PATH = "bitmap1.png";
 
-    event.loadFourColorBitmap("test", PATH, 0, 1, COLOR_TABLE_1, PALETTE_1);
+    event.loadFourColorBitmap("bmp1", PATH, 0, 1, COLOR_TABLE_1, PALETTE_1);
 }
