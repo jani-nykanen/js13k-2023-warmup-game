@@ -30,6 +30,8 @@ export class Stage {
 
             this.backgroundPlatforms[i] = (new Array<number> (this.width)).fill(-1);
         }
+
+        this.timer = 0.0;
     }
 
 

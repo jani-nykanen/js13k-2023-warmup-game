@@ -42,7 +42,7 @@ export class Core {
         if (loaded && !this.initialized) {
 
             this.mainProgram?.init(this.event);
-            this.initialized = false;
+            this.initialized = true;
         }
 
         if (loaded) 
