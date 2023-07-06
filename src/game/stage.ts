@@ -1,6 +1,7 @@
 import { CoreEvent } from "../core/event.js";
 import { Bitmap } from "../renderer/bitmap.js";
 import { Canvas, Flip } from "../renderer/canvas.js";
+import { negMod } from "../common/math.js";
 
 
 const TILE_WIDTH = 8;
@@ -28,7 +29,7 @@ export class Stage {
 
     constructor(screenWidth : number) {
 
-        const OFFSET = 2;
+        const OFFSET = 3;
 
         this.width = OFFSET + ((screenWidth / TILE_WIDTH) | 0);
     
@@ -78,25 +79,50 @@ export class Stage {
     private drawPlatform(canvas : Canvas, bmp : Bitmap, index : number, shift : number) : void {
 
         const X_OFFSET = -TILE_WIDTH;
+        const BRIDGE_Y_OFF = -5;
 
         let p = this.platforms[index];
 
         let dx : number;
         let dy : number;
+        let sx : number;
+
+        let left : number;
+        let middle : number;
+        let right : number;
 
         // Forefront platform
         dy = canvas.height - 16;
         for (let i = 0; i < this.width; ++ i) {
 
+            left = p[negMod(i + this.gridPointer - 1, this.width)];
+            middle = p[(i + this.gridPointer) % this.width];
+            right = p[(i + this.gridPointer + 1) % this.width];
+
             dx = X_OFFSET + i*TILE_WIDTH - shift;
-            dy = canvas.height - p[(i + this.gridPointer) % this.width] * TILE_HEIGHT;
+
+            // Bridge, but only in the front platform
+            if (index == 0 && middle == 0) {
+
+                dy = canvas.height - TILE_HEIGHT*2 + BRIDGE_Y_OFF;
+                canvas.setFlag("flip", Flip.None);
+                canvas.drawBitmap(bmp, dx, dy, 32, 0, 8, 16);
+
+                continue;
+            }
+
+            dy = canvas.height - p[(i + this.gridPointer) % this.width]*TILE_HEIGHT;
+
+            sx = (left == middle && right == middle) ? 0 : 8;
+            canvas.setFlag("flip", right != middle ? Flip.Horizontal : Flip.None);
 
             // Soil
-            canvas.drawBitmap(bmp, dx, dy + TILE_HEIGHT, 16, 8, 8, 8);
+            canvas.drawBitmap(bmp, dx, dy + TILE_HEIGHT, sx + 16, 8, 8, 8);
             // Grass shadow
-            canvas.drawBitmap(bmp, dx, dy, 16, 0, 8, 8);
+            canvas.drawBitmap(bmp, dx, dy, sx + 16, 0, 8, 8);
             // Grass
-            canvas.drawBitmap(bmp, dx, dy, 0, 0, 8, 8);
+            canvas.drawBitmap(bmp, dx, dy, sx, 0, 8, 8);
+            
         }
     }
 
@@ -121,7 +147,7 @@ export class Stage {
 
         let bmp = canvas.getBitmap("bmp1");
 
-        let shift = Math.round(this.timer*TILE_WIDTH);
+        let shift = Math.floor(this.timer*TILE_WIDTH);
 
         this.drawPlatform(canvas, bmp, 0, shift);
     }
