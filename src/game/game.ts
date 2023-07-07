@@ -26,7 +26,7 @@ export class Game implements Program {
 
     public update(event : CoreEvent) : void {
 
-        const MOVE_SPEED = 1.0/8.0;
+        const MOVE_SPEED = 1.0/4.0;
 
         this.stage.update(MOVE_SPEED, event);
     }

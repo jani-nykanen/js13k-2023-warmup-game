@@ -7,11 +7,14 @@ import { negMod } from "../common/math.js";
 const TILE_WIDTH = 8;
 const TILE_HEIGHT = 8;
 
-const HOLE_TIME_MINIMUM = [2, 20, 20];
-const HOLE_TIME_MAXIMUM = [10, 50, 50];
+const HOLE_TIME_MINIMUM = [20, 20, 20];
+const HOLE_TIME_MAXIMUM = [40, 50, 50];
 
 const HOLE_COUNT_MINIMUM = [2, 20, 20];
 const HOLE_COUNT_MAXIMUM = [10, 50, 50];
+
+const PLATFORM_MIN_HEIGHT = [2, 4, 8];
+const PLATFORM_MAX_HEIGHT = [2, 8, 12];
 
 
 export class Stage {
@@ -20,6 +23,7 @@ export class Stage {
     private platforms : Array<number[]>;
     private holeTimers : Array<number>;
     private holeCounters : Array<number>;
+    private platformHeights : Array<number>;
 
     private width : number;
 
@@ -36,17 +40,25 @@ export class Stage {
         this.platforms = new Array<number[]> (3);
         this.holeTimers = new Array<number> (3);
         this.holeCounters = new Array<number> (3);
+        this.platformHeights = new Array<number> (3);
 
         for (let i = 0; i < 3; ++ i) {
 
             this.platforms[i] = (new Array<number> (this.width)).fill(2);
             
             this.holeTimers[i] = HOLE_TIME_MINIMUM[i] + 
-                Math.floor(Math.random() * (HOLE_TIME_MAXIMUM[i] - HOLE_TIME_MINIMUM[i]));
+                Math.floor(Math.random() * (HOLE_TIME_MAXIMUM[i] - HOLE_TIME_MINIMUM[i] + 1));
             this.holeCounters[i] = 0;
+
+            this.platformHeights[i] = i == 0 ? 2 : 0;
         }
 
         this.timer = 0.0;
+    }
+
+    private randomizeValue(min : number[], max : number[], i : number) : number {
+
+        return min[i] + Math.floor(Math.random() * (max[i] - min[i]));
     }
 
     
@@ -55,23 +67,19 @@ export class Stage {
         if (this.holeCounters[index] > 0) {
 
             -- this.holeCounters[index];
-
             this.platforms[index][this.gridPointer] = 0;
         }
         else {
 
-            this.platforms[index][this.gridPointer] = 2;
+            this.platforms[index][this.gridPointer] = this.platformHeights[index];
         }
 
         -- this.holeTimers[index];
         if (this.holeTimers[index] < 0) {
             
-            this.holeCounters[index] = HOLE_COUNT_MINIMUM[index] + 
-                Math.floor(Math.random() * (HOLE_COUNT_MAXIMUM[index] - HOLE_COUNT_MINIMUM[index]));
-
-            this.holeTimers[index] = this.holeCounters[index] +
-                HOLE_TIME_MINIMUM[index] + 
-                Math.floor(Math.random() * (HOLE_TIME_MAXIMUM[index] - HOLE_TIME_MINIMUM[index]));
+            this.holeCounters[index] = this.randomizeValue(HOLE_COUNT_MINIMUM, HOLE_COUNT_MAXIMUM, index);
+            this.holeTimers[index] = this.randomizeValue(HOLE_TIME_MINIMUM, HOLE_TIME_MAXIMUM, index);
+            this.platformHeights[index] = this.randomizeValue(PLATFORM_MIN_HEIGHT, PLATFORM_MAX_HEIGHT, index);
         }
     }
 
@@ -117,12 +125,14 @@ export class Stage {
             canvas.setFlag("flip", right != middle ? Flip.Horizontal : Flip.None);
 
             // Soil
-            canvas.drawBitmap(bmp, dx, dy + TILE_HEIGHT, sx + 16, 8, 8, 8);
-            // Grass shadow
-            canvas.drawBitmap(bmp, dx, dy, sx + 16, 0, 8, 8);
+            for (let j = 1; j < middle; ++ j) {
+
+                canvas.drawBitmap(bmp, dx, dy + j*TILE_HEIGHT, sx + 16, 8, 8, 8);
+            }
+
             // Grass
+            canvas.drawBitmap(bmp, dx, dy, sx + 16, 0, 8, 8);
             canvas.drawBitmap(bmp, dx, dy, sx, 0, 8, 8);
-            
         }
     }
 
@@ -132,7 +142,7 @@ export class Stage {
         this.timer += moveSpeed * event.delta;
         if (this.timer >= 1.0) {
 
-            // TODO: Use i in ... instead?
+            // TODO: Use "i in ..." instead?
             for (let i = 0; i < this.platforms.length; ++ i) {
 
                 this.updatePlatform(i);
@@ -149,6 +159,9 @@ export class Stage {
 
         let shift = Math.floor(this.timer*TILE_WIDTH);
 
-        this.drawPlatform(canvas, bmp, 0, shift);
+        for (let i = 2; i >= 0; -- i) {
+
+            this.drawPlatform(canvas, bmp, i, shift);
+        }
     }
 }
