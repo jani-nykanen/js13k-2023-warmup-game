@@ -5,7 +5,7 @@ import { Game } from "./game/game.js";
 
 window.onload = () => {
 
-    (new Core(192, 144, 1.0,
+    (new Core(144, 192, 1.0,
         
         new Map<string, InputAction> (
         [   

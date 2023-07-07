@@ -3,12 +3,12 @@ import { Canvas } from "../renderer/canvas.js";
 import { ActionMap, Input } from "./input.js";
 
 
-
 export class CoreEvent {
 
 
     private frameStep : number;
     private frameDelta : number = 1.0;
+    private frameInterpolation : number = 0.0;
 
     // Bitmaps are stored here since they are created here
     private bitmaps : Map<string, Bitmap>;
@@ -29,6 +29,12 @@ export class CoreEvent {
     public get delta() : number {
 
         return this.frameDelta;
+    }
+
+
+    public get interpolationStep() : number {
+
+        return this.frameInterpolation;
     }
 
 
@@ -62,9 +68,13 @@ export class CoreEvent {
 
     public setDelta(time : number) : void {
 
-        const COMPARE = 1.0/60.0;
+        this.frameDelta = time;
+    }
 
-        this.frameDelta = time / COMPARE;
+
+    public setInterpolationStep(value : number) : void {
+
+        this.frameInterpolation = value;
     }
 
 

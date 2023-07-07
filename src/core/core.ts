@@ -34,10 +34,12 @@ export class Core {
         const delta = Math.min(ts - this.oldTime, FRAME_TIME * MAX_REFRESH_COUNT);
         const loaded = this.event.hasLoaded();
 
-        this.event.setDelta(delta / 1000.0);
+        this.event.setDelta(delta / FRAME_TIME);
 
         this.timeSum += delta;
         this.oldTime = ts;
+
+        this.event.setInterpolationStep((this.timeSum % FRAME_TIME) / FRAME_TIME);
 
         if (loaded && !this.initialized) {
 

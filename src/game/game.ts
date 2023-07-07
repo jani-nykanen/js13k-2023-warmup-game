@@ -6,6 +6,9 @@ import { loadAndProcessBitmaps } from "./assets.js"
 import { Stage } from "./stage.js";
 
 
+const MOVE_SPEED = 1.0;
+
+
 export class Game implements Program {
 
 
@@ -20,13 +23,11 @@ export class Game implements Program {
 
     public init(event : CoreEvent) : void {
 
-        this.stage = new Stage(event.screenWidth);
+        this.stage = new Stage(event);
     }
 
 
     public update(event : CoreEvent) : void {
-
-        const MOVE_SPEED = 1.0/4.0;
 
         this.stage.update(MOVE_SPEED, event);
     }
@@ -34,6 +35,7 @@ export class Game implements Program {
 
     public updatePhysics(event : CoreEvent) : void {
 
+        this.stage.updatePhysics(MOVE_SPEED, event);
     }
 
 
