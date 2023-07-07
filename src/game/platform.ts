@@ -91,7 +91,7 @@ export class Platform {
     }
 
 
-    public updatePhysics(moveSpeed : number, event : CoreEvent) : void {
+    public updatePhysics(moveSpeed : number, event : CoreEvent) : boolean {
 
         const OFFSET = 32;
 
@@ -100,7 +100,11 @@ export class Platform {
 
             this.posY -= event.screenHeight + OFFSET*2;
             this.computeTiles();
+
+            return true;
         }
+
+        return false;
     }
 
 
@@ -139,7 +143,7 @@ export class Platform {
 
                 for (let i = 0; i < 2; ++ i) {
 
-                    canvas.drawBitmap(bmp, x*16 + i*8, p-8, 40, 0, 8, 8);
+                    canvas.drawBitmap(bmp, x*16 + i*8, p-8, 16, 8, 8, 8);
                 }
             }
 
@@ -163,4 +167,7 @@ export class Platform {
             canvas.drawBitmap(bmp, x*16 + 8, p + 8, sx, 8, 8, 8); // Soil
         }
     }
+
+
+    public getPosition = () : number => this.posY;
 }

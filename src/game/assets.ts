@@ -1,15 +1,27 @@
 import { CoreEvent } from "../core/event.js";
 
 
-const PALETTE_1 = [ 
-    "000000ff", "00000000", "55aa00ff", "aaff00ff", // Grass
-    "000000ff", "aa5555ff", "ffaa55ff", "00000000", // Soil
-    "000000ff", "aaaaaaff", "ffffffff", "00000000", // Spike
-];
+const PALETTE = [
+
+    "00000000", // 0 Alpha
+    "000000ff", // 1 Black
+    "555555ff", // 2 Dark gray
+    "aaaaaaff", // 3 Light gray
+    "ffffffff", // 4 White
+    "aa5555ff", // 5 Soil 1
+    "ffaa55ff", // 6 Soil 2
+    "55aa00ff", // 7 Grass 1
+    "aaff00ff", // 8 Grass 2
+    "ffaa00ff", // 9 Coin 1
+    "ffff55ff", // A Coin 2
+
+]
 
 const COLOR_TABLE_1 = [
-    "0123", "0123", "4567", "4567", "4567", "89ab",
-    "4567", "4567", "4567", "4567", "4567", "0000"
+    "1078", "1078", "1560", "1560", "1560",
+    "1560", "1560", "1340", "0000", "1560",
+    "19A0", "19A0", "19A0", "19A0", "0000",
+    "19A0", "19A0", "19A0", "19A0", "0000",
 ];
 
 
@@ -17,5 +29,5 @@ export const loadAndProcessBitmaps = (event : CoreEvent) : void => {
 
     const PATH = "bitmap1.png";
 
-    event.loadFourColorBitmap("bmp1", PATH, 0, 1, COLOR_TABLE_1, PALETTE_1);
+    event.loadFourColorBitmap("bmp1", PATH, 0, 3, COLOR_TABLE_1, PALETTE);
 }
