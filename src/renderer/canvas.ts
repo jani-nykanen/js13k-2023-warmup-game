@@ -60,18 +60,14 @@ export class Canvas {
 
     private fetchBitmapCallback : ((name : string) => Bitmap) | undefined = undefined;
 
-
-    public get width() : number {
-
-        return this.canvas.width;
-    }
-    public get height() : number {
-
-        return this.canvas.height;
-    }
+    public readonly width : number;
+    public readonly height : number;
 
 
     constructor(width : number, height : number) {
+
+        this.width = width;
+        this.height = height;
 
         [this.canvas, this.ctx] = createCanvasElement(width, height);
         this.ctx.imageSmoothingEnabled = false;

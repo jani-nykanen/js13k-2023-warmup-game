@@ -73,7 +73,10 @@ export const processFourColorBitmap = (image : HTMLImageElement,
     for (let y = Math.max(0, startLine); y < Math.min(y + h, endLine + 1); ++ y) {
 
         for (let x = 0; x < w; ++ x) {
-            
+
+            if (j >= colorTables.length)
+                continue;
+
             colorTable = colorTables[j].split("").map((s : string) => parseInt(s, 32));
             convertTile(imageData, 
                 x*gridWidth, y*gridWidth, gridWidth, gridHeight, 
