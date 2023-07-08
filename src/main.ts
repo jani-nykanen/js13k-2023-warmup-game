@@ -9,10 +9,10 @@ window.onload = () => {
         
         new Map<string, InputAction> (
         [   
-            ["left", {keys: ["KeyLeft"], gamepadButtons: []}],
-            ["right", {keys: ["KeyRight"], gamepadButtons: []}],
-            ["up", {keys: ["KeyUp"], gamepadButtons: []}],
-            ["down", {keys: ["KeyDown"], gamepadButtons: []}],
+            ["left", {keys: ["ArrowLeft"], gamepadButtons: []}],
+            ["right", {keys: ["ArrowRight"], gamepadButtons: []}],
+            ["up", {keys: ["ArrowUp"], gamepadButtons: []}],
+            ["down", {keys: ["ArrowDown"], gamepadButtons: []}],
 
             ["jump", {keys: ["KeyZ, Space"], gamepadButtons: [0]}]
         ])

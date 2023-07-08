@@ -37,6 +37,11 @@ export class Input {
         this.prevent = new Array<string> ();
         this.actions = actions;
 
+        for (let k of actions.keys()) {
+
+            this.prevent.push(...actions.get(k).keys);
+        }
+        
         window.addEventListener("keydown", (e : KeyboardEvent) => {
 
             if (this.prevent.includes(e.key)) {
@@ -96,6 +101,7 @@ export class Input {
             if ((state = (this.keys.get(k) as InputState) ) != InputState.Up)
                 break;
         }
+
         return state;
     }
 }

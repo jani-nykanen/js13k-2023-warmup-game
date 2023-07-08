@@ -3,6 +3,7 @@ import { Canvas } from "../renderer/canvas.js";
 import { Platform } from "./platform.js";
 import { Coin } from "./coin.js";
 import { nextObject } from "./gameobject.js";
+import { Player } from "./player.js";
 
 
 const PLATFORM_OFFSET = 64;
@@ -13,6 +14,8 @@ export class Stage {
 
     private platforms : Platform[];
     private coins : Coin[];
+    
+    private player : Player;
 
 
     constructor(event : CoreEvent) {
@@ -24,6 +27,8 @@ export class Stage {
         }
         
         this.coins = new Array<Coin> ();
+    
+        this.player = new Player(event.screenWidth/2, event.screenHeight/2);
     }
 
 
@@ -47,6 +52,8 @@ export class Stage {
 
             p.update(moveSpeed, event);
         }
+
+        this.player.update(moveSpeed, event);
     }
 
 
@@ -64,6 +71,8 @@ export class Stage {
                 this.spawnCoins(p.getPosition(), event);
             }
         }
+
+        this.player.updatePhysics(moveSpeed, event);
     }
 
 
@@ -80,5 +89,7 @@ export class Stage {
 
             c.draw(canvas, bmp);
         }
+
+        this.player.draw(canvas, bmp);
     }
 }

@@ -14,14 +14,19 @@ const PALETTE = [
     "aaff00ff", // 8 Grass 2
     "ffaa00ff", // 9 Coin 1
     "ffff55ff", // A Coin 2
+    "5555aaff", // B Player 1
+    "aaaaffff", // C Player 2
+    "aa0000ff", // D Dark(ish) red
 
 ]
 
 const COLOR_TABLE_1 = [
-    "1078", "1078", "1560", "1560", "1560",
-    "1560", "1560", "1340", "0000", "1560",
-    "19A0", "19A0", "19A0", "19A0", "0000",
-    "19A0", "19A0", "19A0", "19A0", "0000",
+    "1078", "1078", "1560", "1560", "1560", "0000",
+    "1560", "1560", "1340", "1D60", "1560", "0000",
+    "19A0", "19A0", "19A0", "19A0", "10C4", "10C4",
+    "19A0", "19A0", "19A0", "19A0", "10CB", "10CB",
+    "10C4", "10C4", "10CB", "10CB", "10CB", "10CB",
+    "10CB", "10CB", "10CB", "10CB", "10CB", "10CB",
 ];
 
 
@@ -29,5 +34,5 @@ export const loadAndProcessBitmaps = (event : CoreEvent) : void => {
 
     const PATH = "bitmap1.png";
 
-    event.loadFourColorBitmap("bmp1", PATH, 0, 3, COLOR_TABLE_1, PALETTE);
+    event.loadFourColorBitmap("bmp1", PATH, 0, 5, COLOR_TABLE_1, PALETTE);
 }

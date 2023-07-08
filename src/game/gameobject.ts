@@ -70,10 +70,10 @@ export class GameObject {
 
         this.speed.x = this.updateSpeedAxis(
             this.speed.x, this.target.x, 
-            this.friction.x * event.step);
+            this.friction.x*event.step);
         this.speed.y = this.updateSpeedAxis(
             this.speed.y, this.target.y, 
-            this.friction.y* event.step);
+            this.friction.y*event.step);
 
         this.pos.x += this.speed.x * event.step;
         this.pos.y += (this.speed.y + baseSpeed) * event.step;
