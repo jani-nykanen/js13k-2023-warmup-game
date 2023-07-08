@@ -1,7 +1,7 @@
 import { GameObject } from "./gameobject.js";
 import { Vector } from "../common/vector.js";
 import { CoreEvent } from "../core/event.js";
-import { Canvas, Flip } from "../renderer/canvas.js";
+import { Canvas, Flip, Rotation } from "../renderer/canvas.js";
 import { Bitmap } from "../renderer/bitmap.js";
 import { InputState } from "../core/input.js";
 
@@ -15,6 +15,7 @@ export class Player extends GameObject {
     private ledgeTimer : number = 0;
     private canJump : boolean = false;
     private jumpTimer : number = 0;
+    private doubleJump : boolean = false;
 
 
     constructor(x = 0, y = 0) {
@@ -32,6 +33,7 @@ export class Player extends GameObject {
         const BASE_SPEED = 1.0;
         const BASE_GRAVITY = 2.0;
         const JUMP_TIME = 20;
+        const DOUBLE_JUMP_TIME = 12;
 
         let dir = 0;
         if ((event.input.getAction("right") & InputState.DownOrPressed) != 0) {
@@ -52,14 +54,14 @@ export class Player extends GameObject {
 
         let jumpButtonState = event.input.getAction("jump");
 
-        if (this.ledgeTimer > 0 &&
+        if ((this.ledgeTimer > 0 || this.doubleJump) &&
             jumpButtonState == InputState.Pressed) {
 
-            this.ledgeTimer = 0;
-            this.jumpTimer = JUMP_TIME;
-            this.canJump = false;
+            this.jumpTimer = this.ledgeTimer > 0 ? JUMP_TIME : DOUBLE_JUMP_TIME;
+            this.canJump = false
 
-            console.log("JUMP!");
+            this.doubleJump = this.ledgeTimer > 0;
+            this.ledgeTimer = 0;
         }
         else if ((jumpButtonState & InputState.DownOrPressed) == 0) {
 
@@ -71,6 +73,8 @@ export class Player extends GameObject {
     private animate(event : CoreEvent) : void {
 
         const EPS = 0.01;
+        const DOUBLE_JUMP_ANIM_SPEED = 3;
+        const DOUBLE_JUMP_ANIM_TRIGGER = -1.0;
 
         let animSpeed : number;
         let sx = Math.abs(this.speed.x);
@@ -81,6 +85,12 @@ export class Player extends GameObject {
         }
 
         if (!this.canJump) {
+
+            if (!this.doubleJump && this.speed.y < DOUBLE_JUMP_ANIM_TRIGGER) {
+
+                this.spr.animate(6, 9, DOUBLE_JUMP_ANIM_SPEED, event.delta);
+                return;
+            }
 
             this.spr.setFrame(5);
             return;
@@ -121,6 +131,11 @@ export class Player extends GameObject {
             this.ledgeTimer -= event.step;
         }
 
+        if (this.pos.x < 0)
+            this.pos.x += event.screenWidth;
+        else if (this.pos.x > event.screenWidth)
+            this.pos.x -= event.screenWidth;
+
         // TEMP
         if (this.pos.y > event.screenHeight+8) {
 
@@ -136,12 +151,12 @@ export class Player extends GameObject {
         const LEDGE_TIME = 8;
 
         this.canJump = true;
-
+        this.doubleJump = true;
         this.ledgeTimer = LEDGE_TIME;
     };
 
 
-    public draw(canvas : Canvas, bmp : Bitmap) : void {
+    private drawBase(canvas : Canvas, bmp : Bitmap, shiftx = 0, shifty = 0) : void {
 
         const SOURCE_TOP_X = [32, 0, 0, 0, 0, 0];
         const SOURCE_BOTTOM_X = [32, 16, 32, 16, 32, 0];
@@ -152,14 +167,28 @@ export class Player extends GameObject {
             return;
 
         let frame = this.spr.getFrame();
-        let px = Math.round(this.renderPos.x) - 8;
-        let py = Math.round(this.renderPos.y) - 8 + 1;
+        let px = Math.round(this.renderPos.x) - 8 + shiftx;
+        let py = Math.round(this.renderPos.y) - 8 + 1 + shifty;
+        let rot : number;
+
+        canvas.setFlag("flip", this.flip);
+
+        if (frame >= 6) {
+
+            rot = frame - 6;
+            if (this.flip == Flip.Horizontal)
+                rot = 3 - rot;
+
+            canvas.setFlag("rotation", rot as Rotation) ;
+            canvas.drawBitmap(bmp, px, py, 
+                0, 48, 16, 16);
+            canvas.resetFlags();
+            return;
+        }
 
         let noseOffset = 6 + this.dir;
         if (this.flip == Flip.Horizontal)
             noseOffset -= 4;
-
-        canvas.setFlag("flip", this.flip);
 
         canvas.drawBitmap(bmp, px, py, 
             SOURCE_TOP_X[frame], SOURCE_TOP_Y[frame], 16, 8);
@@ -169,6 +198,17 @@ export class Player extends GameObject {
         // Nose
         canvas.drawBitmap(bmp, px + noseOffset, py + 5, 24, 8, 8, 8);   
 
-        canvas.setFlag("flip", Flip.None);
+        canvas.resetFlags();
+    }
+
+
+    public draw(canvas : Canvas, bmp : Bitmap) : void {
+
+        if (this.renderPos.x < 8)
+            this.drawBase(canvas, bmp, canvas.width);
+        else if (this.renderPos.x >= canvas.width-8)
+            this.drawBase(canvas, bmp, -canvas.width);
+
+        this.drawBase(canvas, bmp);
     }
 }

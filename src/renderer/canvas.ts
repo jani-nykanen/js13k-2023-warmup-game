@@ -50,6 +50,9 @@ export const enum TextAlign {
 };
 
 
+export type Rotation = 0 | 1 | 2 | 3;
+
+
 export class Canvas {
 
 
@@ -57,6 +60,7 @@ export class Canvas {
     private ctx : CanvasRenderingContext2D;
 
     private flipFlag : Flip = Flip.None;
+    private rotationFlag : Rotation = 0;
 
     private fetchBitmapCallback : ((name : string) => Bitmap) | undefined = undefined;
 
@@ -113,15 +117,30 @@ export class Canvas {
         sx = 0, sy = 0, sw = bmp.width, sh = bmp.height) : void {
 
         let c = this.ctx;
+        let saveState = this.flipFlag != Flip.None || this.rotationFlag != 0;
 
         if (bmp == undefined)
             return;
 
+        sx |= 0;
+        sy |= 0;
         sw |= 0;
         sh |= 0;
+        dx |= 0;
+        dy |= 0;
 
-        if (this.flipFlag != Flip.None) {
+        if (saveState) {
+
             c.save();
+        }
+
+        if (this.rotationFlag != 0) {
+
+            c.translate(dx + sw/2, dy + sh/2);
+            c.rotate(this.rotationFlag * Math.PI/2);
+
+            dx = -sw/2;
+            dy = -sh/2;
         }
 
         if ((this.flipFlag & Flip.Horizontal) != 0) {
@@ -137,9 +156,9 @@ export class Canvas {
             dy *= -1;
         }
 
-        c.drawImage(bmp, sx | 0, sy | 0, sw, sh, dx | 0, dy | 0, sw, sh);
+        c.drawImage(bmp, sx, sy, sw, sh, dx, dy, sw, sh);
 
-        if (this.flipFlag != Flip.None) {
+        if (saveState) {
 
             c.restore();
         }
@@ -149,7 +168,7 @@ export class Canvas {
     public getBitmap = (name : string) : Bitmap | undefined => this.fetchBitmapCallback(name);
 
 
-    public setFlag(flag : "flip", value : Flip) : void {
+    public setFlag(flag : "flip" | "rotation", value : Flip | Rotation) : void {
 
         switch (flag) {
 
@@ -157,8 +176,19 @@ export class Canvas {
             this.flipFlag = value as Flip;
             break;
 
+        case "rotation":
+            this.rotationFlag = value as Rotation;
+            break;
+
         default:
             break;
         }
+    }
+
+
+    public resetFlags() : void {
+
+        this.flipFlag = Flip.None;
+        this.rotationFlag = 0;
     }
 }

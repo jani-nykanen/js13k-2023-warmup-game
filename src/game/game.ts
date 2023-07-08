@@ -18,12 +18,15 @@ export class Game implements Program {
     constructor(event : CoreEvent) {
 
         loadAndProcessBitmaps(event);
+
+        // Need to initialize things here to avoid some warnings in Closure compiler...
+        this.stage = new Stage(event);
     }
 
 
     public init(event : CoreEvent) : void {
 
-        this.stage = new Stage(event);
+        // this.stage = new Stage(event);
     }
 
 

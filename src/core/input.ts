@@ -41,8 +41,6 @@ export class Input {
 
             this.prevent.push(...actions.get(k).keys);
         }
-
-        console.log(this.prevent);
         
         window.addEventListener("keydown", (e : KeyboardEvent) => {
 

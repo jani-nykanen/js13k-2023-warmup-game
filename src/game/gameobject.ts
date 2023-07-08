@@ -39,6 +39,23 @@ export class GameObject {
     }
 
 
+    private setCollisionHorizontalBounds(x : number, w : number, event : CoreEvent) : boolean {
+
+        let left: number;
+        let right : number;
+        
+        for (let i = -1; i <= 1; ++ i) {
+
+            left = this.pos.x + this.center.x - this.hitbox.x/2 + event.screenWidth*i;
+            right = left + this.hitbox.x + event.screenWidth*i;
+
+            if (right >= x && left < x + w)
+                return true;
+        }
+        return false;
+    }
+
+
     private updateSpeedAxis(speed : number, target : number, step : number) : number {
 
         if (speed < target) {
@@ -98,11 +115,7 @@ export class GameObject {
         let py1 = this.pos.y + this.center.y + this.hitbox.y/2;
         let py2 = py1 + (this.speed.y + moveSpeed) * event.step;
 
-        let left = this.pos.x + this.center.x - this.hitbox.x/2;
-        let right = left + this.hitbox.x;
-
-        if (this.speed.y <= 0 ||
-            right < x || left >= x + w)
+        if (this.speed.y <= 0 || !this.setCollisionHorizontalBounds(x, w, event))
             return false;
 
         if (py1 < y + MARGIN && py2 > y - MARGIN) {

@@ -27,6 +27,8 @@ const COLOR_TABLE_1 = [
     "19A0", "19A0", "19A0", "19A0", "1BC0", "1BC0",
     "14C0", "14C0", "1BC0", "1BC0", "1BC0", "1BC0",
     "1BC0", "1BC0", "1BC0", "1BC0", "1BC0", "1BC0",
+    "1BC0", "1BC0", "0000", "0000", "0000", "0000",
+    "1BC0", "14C0", "0000", "0000", "0000", "0000",
 ];
 
 
@@ -34,5 +36,5 @@ export const loadAndProcessBitmaps = (event : CoreEvent) : void => {
 
     const PATH = "bitmap1.png";
 
-    event.loadFourColorBitmap("bmp1", PATH, 0, 5, COLOR_TABLE_1, PALETTE);
+    event.loadFourColorBitmap("bmp1", PATH, 0, 7, COLOR_TABLE_1, PALETTE);
 }
