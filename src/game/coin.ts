@@ -14,7 +14,7 @@ export class Coin extends GameObject {
     }
 
 
-    protected updateEvent(event : CoreEvent) : void {
+    protected updateEvent(baseSpeed : number, event : CoreEvent) : void {
 
         const ANIM_SPEED = 6;
 
@@ -22,7 +22,7 @@ export class Coin extends GameObject {
     };
 
 
-    protected updatePhysicsEvent(event : CoreEvent) : void {
+    protected updatePhysicsEvent(baseSpeed : number, event : CoreEvent) : void {
         
         if (this.pos.y - 8 > event.screenHeight) {
 

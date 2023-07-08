@@ -1,6 +1,7 @@
 import { CoreEvent } from "../core/event.js";
 import { Bitmap } from "../renderer/bitmap.js";
 import { Canvas, Flip } from "../renderer/canvas.js";
+import { GameObject } from "./gameobject.js";
 
 export class Platform {
 
@@ -166,6 +167,21 @@ export class Platform {
             canvas.drawBitmap(bmp, x*16 + 8, p, sx + 16, 0, 8, 8); // Grass shadow
             canvas.drawBitmap(bmp, x*16 + 8, p + 8, sx, 8, 8, 8); // Soil
         }
+    }
+
+
+    public objectCollision(o : GameObject, moveSpeed : number, event : CoreEvent) : boolean {
+
+        let ret = false;
+
+        for (let x = 0; x < this.width; ++ x) {
+
+            if (this.tiles[x] == 0)
+                continue;
+
+            ret = o.floorCollision(x*16, this.posY, 16, moveSpeed, event) || ret;
+        }
+        return ret;
     }
 
 

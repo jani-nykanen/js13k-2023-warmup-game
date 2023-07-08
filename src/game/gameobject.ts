@@ -14,6 +14,7 @@ export class GameObject {
     protected target : Vector;
     protected friction : Vector;
 
+    protected center : Vector;
     protected hitbox : Vector;
 
     protected spr : Sprite;
@@ -28,6 +29,9 @@ export class GameObject {
         this.speed = new Vector();
         this.target = new Vector();
         this.friction = new Vector(1.0, 1.0);
+
+        this.center = new Vector();
+        this.hitbox = new Vector();
 
         this.spr = new Sprite();
 
@@ -45,8 +49,8 @@ export class GameObject {
     }
 
 
-    protected updateEvent(event : CoreEvent) : void {};
-    protected updatePhysicsEvent(event : CoreEvent) : void {};
+    protected updateEvent(baseSpeed : number, event : CoreEvent) : void {};
+    protected updatePhysicsEvent(baseSpeed : number, event : CoreEvent) : void {};
 
 
     public update(baseSpeed : number, event : CoreEvent) : void {
@@ -57,7 +61,7 @@ export class GameObject {
         this.renderPos.x = this.pos.x + this.speed.x * event.delta;
         this.renderPos.y = this.pos.y + (this.speed.y + baseSpeed) * event.delta;
 
-        this.updateEvent(event);
+        this.updateEvent(baseSpeed, event);
     }
 
 
@@ -66,7 +70,7 @@ export class GameObject {
         if (!this.exist)
             return;
 
-        this.updatePhysicsEvent(event);
+        this.updatePhysicsEvent(baseSpeed, event);
 
         this.speed.x = this.updateSpeedAxis(
             this.speed.x, this.target.x, 
@@ -81,6 +85,37 @@ export class GameObject {
 
 
     public draw(canvas : Canvas, bmp : Bitmap) : void {}
+
+
+    protected floorCollisionEvent(event : CoreEvent) : void {};
+
+
+    public floorCollision(x : number, y : number, w : number, 
+        moveSpeed : number, event : CoreEvent) : boolean {
+
+        const MARGIN = 2;
+
+        let py1 = this.pos.y + this.center.y + this.hitbox.y/2;
+        let py2 = py1 + (this.speed.y + moveSpeed) * event.step;
+
+        let left = this.pos.x + this.center.x - this.hitbox.x/2;
+        let right = left + this.hitbox.x;
+
+        if (this.speed.y <= 0 ||
+            right < x || left >= x + w)
+            return false;
+
+        if (py1 < y + MARGIN && py2 > y - MARGIN) {
+
+            this.pos.y = y - (this.center.y + this.hitbox.y/2);
+            this.speed.y = 0;
+
+            this.floorCollisionEvent(event);
+
+            return true;
+        }
+        return false;
+    }
 
 
     public doesExist = () : boolean => this.exist;

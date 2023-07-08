@@ -41,23 +41,25 @@ export class Input {
 
             this.prevent.push(...actions.get(k).keys);
         }
+
+        console.log(this.prevent);
         
         window.addEventListener("keydown", (e : KeyboardEvent) => {
 
-            if (this.prevent.includes(e.key)) {
+            if (this.prevent.includes(e.code)) {
 
                 e.preventDefault();
             }
-            this.keyEvent(e.key, InputState.Pressed);
+            this.keyEvent(e.code, InputState.Pressed);
         });
 
         window.addEventListener("keyup", (e : KeyboardEvent) => {
 
-            if (this.prevent.includes(e.key)) {
+            if (this.prevent.includes(e.code)) {
 
                 e.preventDefault();
             }
-            this.keyEvent(e.key, InputState.Released);
+            this.keyEvent(e.code, InputState.Released);
         });
     }
 

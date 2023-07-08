@@ -64,15 +64,19 @@ export class Stage {
             c.updatePhysics(moveSpeed, event);
         }
 
+        this.player.updatePhysics(moveSpeed, event);
+
         for (let p of this.platforms) {
 
+            p.objectCollision(this.player, moveSpeed, event);
+            
             if (p.updatePhysics(moveSpeed, event)) {
 
                 this.spawnCoins(p.getPosition(), event);
             }
         }
 
-        this.player.updatePhysics(moveSpeed, event);
+        
     }
 
 

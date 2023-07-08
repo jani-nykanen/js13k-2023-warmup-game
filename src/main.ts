@@ -14,7 +14,7 @@ window.onload = () => {
             ["up", {keys: ["ArrowUp"], gamepadButtons: []}],
             ["down", {keys: ["ArrowDown"], gamepadButtons: []}],
 
-            ["jump", {keys: ["KeyZ, Space"], gamepadButtons: [0]}]
+            ["jump", {keys: ["Space", "KeyZ"], gamepadButtons: [0]}]
         ])
     )).run(Game);
 }
