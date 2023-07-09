@@ -58,6 +58,6 @@ export class Coin extends GameObject {
 
         canvas.setFlag("flip", frame == 3 ? Flip.Horizontal : Flip.None);
         canvas.drawBitmap(bmp, px, py, sx, 16, sw, 16);
-        canvas.setFlag("flip", Flip.None);
+        canvas.resetFlags();
     }
 }

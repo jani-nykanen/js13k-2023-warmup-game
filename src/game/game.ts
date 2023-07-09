@@ -19,7 +19,7 @@ export class Game implements Program {
 
         loadAndProcessBitmaps(event);
 
-        // Need to initialize things here to avoid some warnings in Closure compiler...
+        // Need to initialize things here to avoid some warnings by Closure compiler...
         this.stage = new Stage(event);
     }
 

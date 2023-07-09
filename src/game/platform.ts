@@ -2,6 +2,8 @@ import { CoreEvent } from "../core/event.js";
 import { Bitmap } from "../renderer/bitmap.js";
 import { Canvas, Flip } from "../renderer/canvas.js";
 import { GameObject } from "./gameobject.js";
+import { PLATFORM_OFFSET } from "./stage.js";
+import { negMod } from "../common/math.js";
 
 export class Platform {
 
@@ -94,7 +96,7 @@ export class Platform {
 
     public updatePhysics(moveSpeed : number, event : CoreEvent) : boolean {
 
-        const OFFSET = 32;
+        const OFFSET = PLATFORM_OFFSET/2;
 
         this.posY += moveSpeed * event.step;
         if (this.posY > event.screenHeight + OFFSET) {
@@ -104,7 +106,6 @@ export class Platform {
 
             return true;
         }
-
         return false;
     }
 
@@ -186,4 +187,6 @@ export class Platform {
 
 
     public getPosition = () : number => this.posY;
+    public getTile = (i : number) : number => this.tiles[negMod(i, this.width)];
+    public hasSpike = (i : number) : boolean => this.spikes[negMod(i, this.width)];
 }
