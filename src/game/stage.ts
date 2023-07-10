@@ -74,7 +74,13 @@ export class Stage {
 
     private spawnEnemy(platform : Platform, event : CoreEvent) : void {
 
-        const PROB = [0.50, 0.25, 0.25];
+        const PROB = [
+            0.33, // Unknown
+            0.33, // Ground, moving
+            0.33, // Flying
+            0.0,  // Ground, jumping
+            0.0   // Bullet
+        ]; 
 
         let p = Math.random();
         let v = PROB[0];
@@ -92,26 +98,34 @@ export class Stage {
                 v += PROB[i+1];
         }
 
-        let type = EnemyType.MovingGroundEnemy; //  i as EnemyType;
+        if (i == 0)
+            return;
+
+        let type = i as EnemyType;
         let w = (event.screenWidth/16) | 0;
         let startx = (Math.random() * w) | 0;
 
         let x = startx;
         do {
 
-            if (platform.getTile(x) != 0 &&
-                !platform.hasSpike(x)) {
+            if (type == EnemyType.FlyingEnemy || 
+                (platform.getTile(x) != 0 &&
+                !platform.hasSpike(x))) {
 
                 if (type == EnemyType.MovingGroundEnemy) {
 
                     [left, right] = this.computeEnemyMoveRange(platform, x, w);
                     if (Math.abs(left - right) == 2)
-                        break;
+                        break; // TODO: Swap to a flying enemy
+                }
+                else if (type == EnemyType.FlyingEnemy) {
+
+                    left = -1;
+                    right = w;
                 }
 
                 nextObject<Enemy>(this.enemies, Enemy).spawn(
-                    x*16 + 8,
-                    platform.getPosition() - 8,
+                    x*16 + 8, platform,
                     type,
                     (left+1)*16, right*16);
                 break;

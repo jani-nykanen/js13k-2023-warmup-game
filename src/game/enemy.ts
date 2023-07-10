@@ -3,14 +3,17 @@ import { CoreEvent } from "../core/event.js";
 import { Bitmap } from "../renderer/bitmap.js";
 import { Canvas, Flip } from "../renderer/canvas.js";
 import { GameObject } from "./gameobject.js";
+import { Platform } from "./platform.js";
+import { PLATFORM_OFFSET } from "./stage.js";
 
 
 export const enum EnemyType {
 
-    MovingGroundEnemy = 0,
-    JumpingGroundEnemy = 1,
+    Unknown = 0,
+    MovingGroundEnemy = 1,
     FlyingEnemy = 2,
-    Bullet = 3
+    JumpingGroundEnemy = 3,
+    Bullet = 4
 };
 
 
@@ -24,6 +27,10 @@ export class Enemy extends GameObject {
     private rightBorder : number;
     private dir : number = 0;
 
+    private specialTimer : number = 0;
+
+    private attachedPlatform : Platform | undefined = undefined;
+
 
     constructor() {
 
@@ -33,24 +40,37 @@ export class Enemy extends GameObject {
 
     protected updateEvent(baseSpeed : number, event : CoreEvent) : void {
 
-        const ANIM_BASE_SPEED = 6;
+        const ANIM_BASE_SPEED = [0, 6, 10, 0, 0];
+        const WAVE_SPEED = Math.PI*2 / 60;
+        const WAVE_AMPLITUDE = 2;
 
         switch (this.enemyType) {
 
+        case EnemyType.FlyingEnemy:
+
+            this.specialTimer = (this.specialTimer + WAVE_SPEED * event.delta) % (Math.PI*2); 
+            this.renderOffset.y = Math.round(Math.sin(this.specialTimer) * WAVE_AMPLITUDE);
+
         case EnemyType.MovingGroundEnemy:
 
-            this.spr.animate(0, 1, (ANIM_BASE_SPEED - baseSpeed*2) | 0, event.delta);
+            this.spr.animate(0, 1, (ANIM_BASE_SPEED[this.enemyType as number] - baseSpeed*2) | 0, event.delta);
             break;
 
         default:
             break;
+        }
+
+        let maxY = this.attachedPlatform?.getPosition();
+        if (this.renderPos.y+8 > maxY) {
+
+            this.renderPos.y = maxY - 8;
         }
     };
 
 
     protected updatePhysicsEvent(baseSpeed : number, event : CoreEvent) : void {
         
-        const SPEED_MOD = 0.5;
+        const SPEED_MOD = [0.0, 0.5, 0.33, 0.0, 0.0];
 
         if (this.pos.y - 8 > event.screenHeight) {
 
@@ -59,9 +79,11 @@ export class Enemy extends GameObject {
         }
 
         switch (this.enemyType) {
+
+        case EnemyType.FlyingEnemy:
         case EnemyType.MovingGroundEnemy:
 
-            this.speed.x = baseSpeed * SPEED_MOD * this.dir;
+            this.speed.x = baseSpeed * SPEED_MOD[this.enemyType as number] * this.dir;
             this.target.x = this.speed.x;
             this.flip = this.dir == 1 ? Flip.Horizontal : Flip.None;
             break;
@@ -88,17 +110,23 @@ export class Enemy extends GameObject {
     }
 
 
-    public spawn(x : number, y : number, type : EnemyType,
+    public spawn(x : number, platform : Platform, type : EnemyType,
         leftBorder = x, rightBorder = x) : void {
 
-        this.pos = new Vector(x, y);
+        const OFFSET = [0, -8, -PLATFORM_OFFSET/2 + 8, -8, 0];
+
+        this.pos = new Vector(x, platform.getPosition() + OFFSET[type as number]);
         this.renderPos = this.pos.clone();
+        this.renderOffset.x = 0;
+        this.renderOffset.y = 0;
         this.spr.setFrame(0);
 
         this.enemyType = type;
 
         this.leftBorder = leftBorder;
         this.rightBorder = rightBorder;
+
+        this.attachedPlatform = platform;
 
         if (type != EnemyType.JumpingGroundEnemy) {
 
@@ -120,7 +148,7 @@ export class Enemy extends GameObject {
         let sy : number;
 
         let px = Math.round(this.renderPos.x) - 8;
-        let py = Math.round(this.renderPos.y) - 8; // +1 ???
+        let py = Math.round(this.renderPos.y) - 8;
 
         canvas.setFlag("flip", this.flip);
         switch (this.enemyType) {
@@ -130,9 +158,15 @@ export class Enemy extends GameObject {
                 sx = frame == 0 ? 16 : 32;
                 sy = frame == 0 ? 56 : 48;
 
-                canvas.drawBitmap(bmp, px, py, 16, 48, 16, 8);
-                canvas.drawBitmap(bmp, px, py+8, sx, sy, 16, 8);
+                canvas.drawBitmap(bmp, px, py+1, 16, 48, 16, 8);
+                canvas.drawBitmap(bmp, px, py+9, sx, sy, 16, 8);
 
+                break;
+
+            case EnemyType.FlyingEnemy:
+
+                sy = frame == 0 ? 64 : 72;
+                canvas.drawBitmap(bmp, px, py+4, 0, sy, 16, 8);
                 break;
     
             default:

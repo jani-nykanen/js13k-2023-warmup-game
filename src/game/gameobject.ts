@@ -10,6 +10,7 @@ export class GameObject {
 
     protected pos : Vector;
     protected renderPos : Vector;
+    protected renderOffset : Vector;
     protected speed : Vector;
     protected target : Vector;
     protected friction : Vector;
@@ -26,6 +27,7 @@ export class GameObject {
 
         this.pos = new Vector(x, y);
         this.renderPos = this.pos.clone();
+        this.renderOffset = new Vector();
         this.speed = new Vector();
         this.target = new Vector();
         this.friction = new Vector(1.0, 1.0);
@@ -75,8 +77,8 @@ export class GameObject {
         if (!this.exist)
             return;
 
-        this.renderPos.x = this.pos.x + this.speed.x * event.delta;
-        this.renderPos.y = this.pos.y + (this.speed.y + baseSpeed) * event.delta;
+        this.renderPos.x = this.pos.x + this.speed.x * event.delta + this.renderOffset.x;
+        this.renderPos.y = this.pos.y + (this.speed.y + baseSpeed) * event.delta + this.renderOffset.y;
 
         this.updateEvent(baseSpeed, event);
     }

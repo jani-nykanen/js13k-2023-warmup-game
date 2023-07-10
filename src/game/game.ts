@@ -6,7 +6,7 @@ import { loadAndProcessBitmaps } from "./assets.js"
 import { Stage } from "./stage.js";
 
 
-const MOVE_SPEED = 1.0;
+const MOVE_SPEED = 0.5;
 
 
 export class Game implements Program {
