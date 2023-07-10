@@ -16,6 +16,7 @@ export class Stage {
     private platforms : Platform[];
     private enemies : Enemy[];
     private coins : Coin[];
+    private coinPositions : boolean[];
     
     private player : Player;
 
@@ -23,12 +24,13 @@ export class Stage {
     constructor(event : CoreEvent) {
 
         this.platforms = new Array<Platform> ();
-        for (let y = 0; y < 5; ++ y) {
+        for (let y = 0; y < 6; ++ y) {
 
             this.platforms[y] = new Platform(y*PLATFORM_OFFSET, (event.screenWidth/16) | 0);
         }
         
         this.coins = new Array<Coin> ();
+        this.coinPositions = (new Array<boolean> ()).fill(false);
         this.enemies = new Array<Enemy> ();
     
         this.player = new Player(event.screenWidth/2, event.screenHeight/2);
@@ -43,6 +45,8 @@ export class Stage {
         nextObject<Coin>(this.coins, Coin).spawn(
             x*16 + 8, 
             platform.getPosition() - PLATFORM_OFFSET/2 + 8);
+
+        this.coinPositions[x] = true;
     }
 
 
@@ -75,10 +79,10 @@ export class Stage {
     private spawnEnemy(platform : Platform, event : CoreEvent) : void {
 
         const PROB = [
-            0.33, // Unknown
-            0.33, // Ground, moving
-            0.33, // Flying
-            0.0,  // Ground, jumping
+            0.25, // Unknown
+            0.25, // Ground, moving
+            0.25, // Flying
+            0.25,  // Ground, jumping
             0.0   // Bullet
         ]; 
 
@@ -108,15 +112,17 @@ export class Stage {
         let x = startx;
         do {
 
-            if (type == EnemyType.FlyingEnemy || 
-                (platform.getTile(x) != 0 &&
-                !platform.hasSpike(x))) {
+            if (!this.coinPositions[x] &&
+                ( type == EnemyType.FlyingEnemy || 
+                ( platform.getTile(x) != 0 && !platform.hasSpike(x))) ) {
 
                 if (type == EnemyType.MovingGroundEnemy) {
 
                     [left, right] = this.computeEnemyMoveRange(platform, x, w);
-                    if (Math.abs(left - right) == 2)
-                        break; // TODO: Swap to a flying enemy
+                    if (Math.abs(left - right) == 2) {
+
+                        type = EnemyType.JumpingGroundEnemy;
+                    }
                 }
                 else if (type == EnemyType.FlyingEnemy) {
 
@@ -138,6 +144,14 @@ export class Stage {
 
 
     private spawnObjects(platform : Platform, event : CoreEvent) : void {
+
+        // TODO: Fill would probably takes less space, but I don't want
+        // to create new arrays if not necessary, even though this does 
+        // not happen each frame
+        for (let i = 0; i < this.coinPositions.length; ++ i) {
+
+            this.coinPositions[i] = false;
+        }
 
         this.spawnCoins(platform, event);
         this.spawnEnemy(platform, event);

@@ -12,6 +12,8 @@ export class Platform {
     private spikes : boolean[];
     private posY : number;
     private renderPos : number;
+
+    private recreated : boolean = false;
     
     public readonly width : number;
 
@@ -96,13 +98,17 @@ export class Platform {
 
     public updatePhysics(moveSpeed : number, event : CoreEvent) : boolean {
 
-        const OFFSET = PLATFORM_OFFSET/2;
+        const OFFSET = PLATFORM_OFFSET;
+
+        this.recreated = false;
 
         this.posY += moveSpeed * event.step;
         if (this.posY > event.screenHeight + OFFSET) {
 
             this.posY -= event.screenHeight + OFFSET*2;
             this.computeTiles();
+
+            this.recreated = true;
 
             return true;
         }
@@ -189,4 +195,5 @@ export class Platform {
     public getPosition = () : number => this.posY;
     public getTile = (i : number) : number => this.tiles[negMod(i, this.width)];
     public hasSpike = (i : number) : boolean => this.spikes[negMod(i, this.width)];
+    public wasRecreated = () : boolean => this.recreated;
 }

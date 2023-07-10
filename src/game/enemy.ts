@@ -2,6 +2,7 @@ import { Vector } from "../common/vector.js";
 import { CoreEvent } from "../core/event.js";
 import { Bitmap } from "../renderer/bitmap.js";
 import { Canvas, Flip } from "../renderer/canvas.js";
+import { rgb } from "../renderer/color.js";
 import { GameObject } from "./gameobject.js";
 import { Platform } from "./platform.js";
 import { PLATFORM_OFFSET } from "./stage.js";
@@ -28,6 +29,7 @@ export class Enemy extends GameObject {
     private dir : number = 0;
 
     private specialTimer : number = 0;
+    private touchGround : boolean = true;
 
     private attachedPlatform : Platform | undefined = undefined;
 
@@ -35,6 +37,8 @@ export class Enemy extends GameObject {
     constructor() {
 
         super(0, 0, false);
+
+        this.friction.y = 0.10;
     }
 
 
@@ -43,6 +47,7 @@ export class Enemy extends GameObject {
         const ANIM_BASE_SPEED = [0, 6, 10, 0, 0];
         const WAVE_SPEED = Math.PI*2 / 60;
         const WAVE_AMPLITUDE = 2;
+        const JUMP_FRAME_EPS = 0.5;
 
         switch (this.enemyType) {
 
@@ -54,6 +59,16 @@ export class Enemy extends GameObject {
         case EnemyType.MovingGroundEnemy:
 
             this.spr.animate(0, 1, (ANIM_BASE_SPEED[this.enemyType as number] - baseSpeed*2) | 0, event.delta);
+            break;
+
+        case EnemyType.JumpingGroundEnemy:
+
+            this.spr.setFrame(1);
+            if (!this.touchGround && Math.abs(this.speed.y) > JUMP_FRAME_EPS) {
+
+                this.spr.setFrame(this.speed.y > 0 ? 2 : 0);
+            }
+
             break;
 
         default:
@@ -71,6 +86,13 @@ export class Enemy extends GameObject {
     protected updatePhysicsEvent(baseSpeed : number, event : CoreEvent) : void {
         
         const SPEED_MOD = [0.0, 0.5, 0.33, 0.0, 0.0];
+        const JUMP_WAIT = 30;
+        const JUMP_HEIGHT = -2.5;
+        const GRAVITY = 4.0;
+        // TODO: Tempoprary (but a permanent typo, it seems)
+        const MARGIN = 16;
+
+        let p = this.attachedPlatform?.getPosition() - 8;
 
         if (this.pos.y - 8 > event.screenHeight) {
 
@@ -88,6 +110,37 @@ export class Enemy extends GameObject {
             this.flip = this.dir == 1 ? Flip.Horizontal : Flip.None;
             break;
 
+        case EnemyType.JumpingGroundEnemy:
+
+            if (this.touchGround) {
+
+                if (this.pos.y >= 0) {
+
+                    if ((this.specialTimer += event.step) >= JUMP_WAIT) {
+
+                        this.speed.y = JUMP_HEIGHT;
+                        this.target.y = GRAVITY;
+                        this.touchGround = false;
+                        this.specialTimer -= JUMP_WAIT;
+                    }
+                }
+            }
+            else {
+
+                if (this.speed.y > 0 && 
+                    this.pos.y >= p &&
+                    this.pos.y < p + MARGIN) {
+
+                    this.pos.y = p;
+                    this.speed.zero();
+                    this.target.zero();
+
+                    this.touchGround = true;
+                }
+            }
+
+            break;
+            
         default:
             break
         }
@@ -117,8 +170,9 @@ export class Enemy extends GameObject {
 
         this.pos = new Vector(x, platform.getPosition() + OFFSET[type as number]);
         this.renderPos = this.pos.clone();
-        this.renderOffset.x = 0;
-        this.renderOffset.y = 0;
+        this.renderOffset.zero();
+        this.speed.zero();
+        this.target.zero();
         this.spr.setFrame(0);
 
         this.enemyType = type;
@@ -128,10 +182,16 @@ export class Enemy extends GameObject {
 
         this.attachedPlatform = platform;
 
+        this.touchGround = true;
+
         if (type != EnemyType.JumpingGroundEnemy) {
 
             this.dir = Math.random() < 0.5 ? -1 : 1;
             this.flip = this.dir == 1 ? Flip.Horizontal : Flip.None;
+        }
+        else {
+
+            this.pos.y += 1;
         }
 
         this.exist = true;
@@ -169,6 +229,27 @@ export class Enemy extends GameObject {
                 canvas.drawBitmap(bmp, px, py+4, 0, sy, 16, 8);
                 break;
     
+            case EnemyType.JumpingGroundEnemy:
+
+                canvas.fillColor(rgb(0, 0, 0));
+
+                // Body
+                canvas.drawBitmap(bmp, px, py+2, 32, 64, 16, 16);
+
+                py += (frame-1);
+
+                // Eye balls
+                canvas.drawBitmap(bmp, px, py+4, 32, 56, 16, 8);
+                // Nose
+                canvas.drawBitmap(bmp, px+4, py+7, 24, 8, 8, 8);
+
+                // Pupils
+                py += (frame-1);
+                canvas.fillRect(px+5, py+8, 1, 1);
+                canvas.fillRect(px+10, py+8, 1, 1);
+
+                break;
+
             default:
                 break;
         }

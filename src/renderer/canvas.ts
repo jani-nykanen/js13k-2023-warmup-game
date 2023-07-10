@@ -62,6 +62,8 @@ export class Canvas {
     private flipFlag : Flip = Flip.None;
     private rotationFlag : Rotation = 0;
 
+    private activeColor : string = "ffffffff";
+
     private fetchBitmapCallback : ((name : string) => Bitmap) | undefined = undefined;
 
     public readonly width : number;
@@ -110,6 +112,21 @@ export class Canvas {
 
         c.fillStyle = colorStr;
         c.fillRect(0, 0, this.width, this.height);
+        c.fillStyle = this.activeColor;
+    }
+
+
+    public fillColor(colorStr : string) : void {
+
+        this.ctx.fillStyle = (this.activeColor = colorStr);
+    }
+
+
+    public fillRect(x : number, y : number, w : number, h : number) : void {
+
+        let c = this.ctx;
+
+        c.fillRect(x | 0, y | 0, w | 0, h | 0);
     }
 
 
