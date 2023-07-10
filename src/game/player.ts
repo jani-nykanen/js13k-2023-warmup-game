@@ -3,7 +3,7 @@ import { Vector } from "../common/vector.js";
 import { CoreEvent } from "../core/event.js";
 import { Canvas, Flip, Rotation } from "../renderer/canvas.js";
 import { Bitmap } from "../renderer/bitmap.js";
-import { InputState } from "../core/input.js";
+import { Input, InputState } from "../core/input.js";
 
 
 export class Player extends GameObject {
@@ -16,6 +16,8 @@ export class Player extends GameObject {
     private canJump : boolean = false;
     private jumpTimer : number = 0;
     private doubleJump : boolean = false;
+    private stomped : boolean = false;
+    private fastDropping : boolean = false;
 
 
     constructor(x = 0, y = 0) {
@@ -34,6 +36,8 @@ export class Player extends GameObject {
         const BASE_GRAVITY = 2.0;
         const JUMP_TIME = 20;
         const DOUBLE_JUMP_TIME = 12;
+        const STOMP_JUMP_BONUS = 8;
+        const FAST_DROP_SPEED = 4.0;
 
         let dir = 0;
         if ((event.input.getAction("right") & InputState.DownOrPressed) != 0) {
@@ -52,9 +56,42 @@ export class Player extends GameObject {
         this.target.x = BASE_SPEED * dir;
         this.target.y = BASE_GRAVITY;
 
+        let fastDropButtonState = event.input.getAction("down");
+
+        if (!this.fastDropping && fastDropButtonState == InputState.Pressed) {
+
+            this.fastDropping = true;
+        }
+
+        if (this.fastDropping) {
+
+            if ((fastDropButtonState & InputState.DownOrPressed) == 0) {
+
+                this.fastDropping = false;
+            }
+            else {
+
+                this.speed.y = FAST_DROP_SPEED;
+                this.target.y = FAST_DROP_SPEED;
+
+                this.jumpTimer = 0;
+                this.stomped = false;
+                return;
+            }
+        }
+
         let jumpButtonState = event.input.getAction("jump");
 
-        if ((this.ledgeTimer > 0 || this.doubleJump) &&
+        // TODO: Down press boost does not work yet
+        if (this.stomped && 
+            ( (jumpButtonState & InputState.DownOrPressed) == 1 ||
+              (!this.fastDropping && fastDropButtonState == InputState.Down ) 
+            )) {
+
+            this.jumpTimer += STOMP_JUMP_BONUS;
+            this.stomped = false;
+        }
+        else if ((this.ledgeTimer > 0 || this.doubleJump) &&
             jumpButtonState == InputState.Pressed) {
 
             this.jumpTimer = this.ledgeTimer > 0 ? JUMP_TIME : DOUBLE_JUMP_TIME;
@@ -63,7 +100,8 @@ export class Player extends GameObject {
             this.doubleJump = this.ledgeTimer > 0;
             this.ledgeTimer = 0;
         }
-        else if ((jumpButtonState & InputState.DownOrPressed) == 0) {
+        else if (!this.stomped &&
+            (jumpButtonState & InputState.DownOrPressed) == 0) {
 
             this.jumpTimer = 0;
         }
@@ -124,6 +162,11 @@ export class Player extends GameObject {
 
             this.speed.y = -(JUMP_SPEED + baseSpeed);
             this.jumpTimer -= event.step;
+
+            if (this.jumpTimer <= 0) {
+
+                this.stomped = false;
+            }
         }
 
         if (this.ledgeTimer > 0) {
@@ -146,9 +189,21 @@ export class Player extends GameObject {
     }
 
     
-    protected floorCollisionEvent(event : CoreEvent) : void {
+    protected floorCollisionEvent(event : CoreEvent, special : boolean) : void {
 
         const LEDGE_TIME = 8;
+        const STOMP_JUMP = 8;
+        const FAST_DROP_BONUS = 4;
+
+        this.stomped = special;
+        this.fastDropping = false;
+
+        if (special) {
+
+            this.jumpTimer = STOMP_JUMP;
+            this.doubleJump = true;
+            return;
+        }
 
         this.canJump = true;
         this.doubleJump = true;

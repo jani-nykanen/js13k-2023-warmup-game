@@ -3,6 +3,7 @@ import { CoreEvent } from "../core/event.js";
 import { Bitmap } from "../renderer/bitmap.js";
 import { Canvas, Flip } from "../renderer/canvas.js";
 import { GameObject } from "./gameobject.js";
+import { Player } from "./player.js";
 
 
 export class Coin extends GameObject {
@@ -11,6 +12,8 @@ export class Coin extends GameObject {
     constructor() {
 
         super(0, 0, false);
+
+        this.hitbox = new Vector(12, 12);
     }
 
 
@@ -59,5 +62,16 @@ export class Coin extends GameObject {
         canvas.setFlag("flip", frame == 3 ? Flip.Horizontal : Flip.None);
         canvas.drawBitmap(bmp, px, py, sx, 16, sw, 16);
         canvas.resetFlags();
+    }
+
+
+    public playerCollision(player : Player, event : CoreEvent) : boolean {
+
+        if (this.doesOverlay(player)) {
+
+            this.exist = false;
+            return true;
+        }
+        return false;
     }
 }

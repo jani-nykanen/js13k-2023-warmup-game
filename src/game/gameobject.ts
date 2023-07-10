@@ -106,26 +106,28 @@ export class GameObject {
     public draw(canvas : Canvas, bmp : Bitmap) : void {}
 
 
-    protected floorCollisionEvent(event : CoreEvent) : void {};
+    protected floorCollisionEvent(event : CoreEvent, special? : boolean) : void {};
 
 
     public floorCollision(x : number, y : number, w : number, 
-        moveSpeed : number, event : CoreEvent) : boolean {
+        moveSpeed : number, event : CoreEvent, special = false, speedCheckLimit = 0.0) : boolean {
 
         const MARGIN = 2;
 
         let py1 = this.pos.y + this.center.y + this.hitbox.y/2;
         let py2 = py1 + (this.speed.y + moveSpeed) * event.step;
 
-        if (this.speed.y <= 0 || !this.setCollisionHorizontalBounds(x, w, event))
+        if (this.speed.y <= speedCheckLimit || 
+            !this.setCollisionHorizontalBounds(x, w, event))
             return false;
 
         if (py1 < y + MARGIN && py2 > y - MARGIN) {
 
             this.pos.y = y - (this.center.y + this.hitbox.y/2);
-            this.speed.y = 0;
+            if (!special)
+                this.speed.y = 0;
 
-            this.floorCollisionEvent(event);
+            this.floorCollisionEvent(event, special);
 
             return true;
         }
@@ -134,6 +136,17 @@ export class GameObject {
 
 
     public doesExist = () : boolean => this.exist;
+
+
+    public doesOverlayRect= (o : GameObject, pos : Vector, center : Vector, hitbox : Vector) : boolean => 
+        this.exist && o.exist &&
+        this.pos.x + this.center.x + this.hitbox.x/2 >= pos.x + center.x - hitbox.x/2 &&
+        this.pos.x + this.center.x - this.hitbox.x/2 <= pos.x + center.x + hitbox.x/2 &&
+        this.pos.y + this.center.y + this.hitbox.y/2 >= pos.y + center.y - hitbox.y/2 &&
+        this.pos.y + this.center.y - this.hitbox.y/2 <= pos.y + center.y + hitbox.y/2;
+
+
+    public doesOverlay = (o : GameObject) : boolean => this.doesOverlayRect(o, o.pos, o.center, o.hitbox);
 }
 
 

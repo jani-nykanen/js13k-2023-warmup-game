@@ -5,6 +5,7 @@ import { Canvas, Flip } from "../renderer/canvas.js";
 import { rgb } from "../renderer/color.js";
 import { GameObject } from "./gameobject.js";
 import { Platform } from "./platform.js";
+import { Player } from "./player.js";
 import { PLATFORM_OFFSET } from "./stage.js";
 
 
@@ -255,5 +256,31 @@ export class Enemy extends GameObject {
         }
 
         canvas.resetFlags();
+    }
+
+
+    public playerCollision(player : Player, moveSpeed : number, event : CoreEvent) : boolean {
+
+        const STOMP_W = 20;
+        const STOMP_Y = -6;
+
+        if (!this.exist || !player.doesExist())
+            return false;
+
+        if (player.floorCollision(
+            this.pos.x + this.center.x - STOMP_W/2, 
+            this.pos.y + STOMP_Y, 
+            STOMP_W, moveSpeed, event, true, -1.0)) {
+
+            this.exist = false;
+            return true;
+        }
+
+        // TODO: Kill player
+        if (player.doesOverlay(this)) {
+
+            return true;
+        }
+        return false;
     }
 }

@@ -5,6 +5,7 @@ import { Coin } from "./coin.js";
 import { nextObject } from "./gameobject.js";
 import { Player } from "./player.js";
 import { Enemy, EnemyType } from "./enemy.js";
+import { weightedProbability } from "../common/math.js";
 
 
 export const PLATFORM_OFFSET = 48;
@@ -39,14 +40,36 @@ export class Stage {
 
     private spawnCoins(platform : Platform, event : CoreEvent) : void {
 
+        const WEIGHTS = [0.25, 0.50, 0.20, 0.05];
+
+        let count = weightedProbability(WEIGHTS);
+        if (count == 0)
+            return;
+
         let w = (event.screenWidth / 16) | 0;
-        let x = (Math.random() * w) | 0;
+        let x1 : number;
+        let x2 : number;
 
-        nextObject<Coin>(this.coins, Coin).spawn(
-            x*16 + 8, 
-            platform.getPosition() - PLATFORM_OFFSET/2 + 8);
+        for (let i = 0; i < count; ++ i) {
 
-        this.coinPositions[x] = true;
+            x2 = (Math.random() * w) | 0;
+            x1 = x2;
+            do {
+                
+                if (!this.coinPositions[x1] &&
+                    !platform.hasSpike(x1)) {
+
+                    nextObject<Coin>(this.coins, Coin).spawn(
+                        x1*16 + 8, 
+                        platform.getPosition() - PLATFORM_OFFSET/2 + 8);
+        
+                    this.coinPositions[x1] = true;
+                    break;
+                }
+
+                x1 = (x1 + 1) % w;
+            } while (x1 != x2); // This cannot really happen
+        }
     }
 
 
@@ -78,7 +101,7 @@ export class Stage {
 
     private spawnEnemy(platform : Platform, event : CoreEvent) : void {
 
-        const PROB = [
+        const WEIGHTS = [
             0.25, // Unknown
             0.25, // Ground, moving
             0.25, // Flying
@@ -86,22 +109,10 @@ export class Stage {
             0.0   // Bullet
         ]; 
 
-        let p = Math.random();
-        let v = PROB[0];
-        let i : number;
-
         let left : number;
         let right : number;
 
-        for (i = 0; i < PROB.length; ++ i) {
-
-            if (p < v)  
-                break;
-            
-            if (i < PROB.length-1)
-                v += PROB[i+1];
-        }
-
+        let i = weightedProbability(WEIGHTS);
         if (i == 0)
             return;
 
@@ -184,14 +195,16 @@ export class Stage {
         for (let c of this.coins) {
 
             c.updatePhysics(moveSpeed, event);
+            c.playerCollision(this.player, event);
         }
+
+        this.player.updatePhysics(moveSpeed, event);
 
         for (let e of this.enemies) {
 
             e.updatePhysics(moveSpeed, event);
+            e.playerCollision(this.player, moveSpeed, event);
         }
-
-        this.player.updatePhysics(moveSpeed, event);
 
         for (let p of this.platforms) {
 
