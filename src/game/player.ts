@@ -18,6 +18,7 @@ export class Player extends GameObject {
     private doubleJump : boolean = false;
     private stomped : boolean = false;
     private fastDropping : boolean = false;
+    private stompBonusTimer : number = 0;
 
 
     constructor(x = 0, y = 0) {
@@ -57,10 +58,14 @@ export class Player extends GameObject {
         this.target.y = BASE_GRAVITY;
 
         let fastDropButtonState = event.input.getAction("down");
+        let jumpButtonState = event.input.getAction("jump");
 
-        if (!this.fastDropping && fastDropButtonState == InputState.Pressed) {
+        if (!this.fastDropping && 
+            fastDropButtonState == InputState.Pressed &&
+            !this.canJump) {
 
             this.fastDropping = true;
+            this.stomped = false;
         }
 
         if (this.fastDropping) {
@@ -80,18 +85,24 @@ export class Player extends GameObject {
             }
         }
 
-        let jumpButtonState = event.input.getAction("jump");
+        // TODO: This is a mess
+        if (this.stomped) {
+            
+            if ((jumpButtonState & InputState.DownOrPressed) == 1) {
 
-        // TODO: Down press boost does not work yet
-        if (this.stomped && 
-            ( (jumpButtonState & InputState.DownOrPressed) == 1 ||
-              (!this.fastDropping && fastDropButtonState == InputState.Down ) 
-            )) {
+                this.jumpTimer += STOMP_JUMP_BONUS;
+                this.stomped = false;
+                return;
+            }
+            else if (fastDropButtonState == InputState.Down) {
 
-            this.jumpTimer += STOMP_JUMP_BONUS;
-            this.stomped = false;
+                this.stompBonusTimer = this.jumpTimer + STOMP_JUMP_BONUS;
+                this.jumpTimer = 0;
+                this.stomped = false;
+            }
         }
-        else if ((this.ledgeTimer > 0 || this.doubleJump) &&
+        
+        if ((this.ledgeTimer > 0 || this.doubleJump) &&
             jumpButtonState == InputState.Pressed) {
 
             this.jumpTimer = this.ledgeTimer > 0 ? JUMP_TIME : DOUBLE_JUMP_TIME;
@@ -169,6 +180,15 @@ export class Player extends GameObject {
             }
         }
 
+        if (this.stompBonusTimer > 0) {
+
+            this.speed.y = -(JUMP_SPEED + baseSpeed);
+            if ((this.stompBonusTimer -= event.step) <= 0) {
+
+                this.stomped = false;
+            }
+        }
+
         if (this.ledgeTimer > 0) {
 
             this.ledgeTimer -= event.step;
@@ -193,20 +213,18 @@ export class Player extends GameObject {
 
         const LEDGE_TIME = 8;
         const STOMP_JUMP = 8;
-        const FAST_DROP_BONUS = 4;
 
         this.stomped = special;
         this.fastDropping = false;
+        this.doubleJump = true;
 
         if (special) {
 
             this.jumpTimer = STOMP_JUMP;
-            this.doubleJump = true;
             return;
         }
 
         this.canJump = true;
-        this.doubleJump = true;
         this.ledgeTimer = LEDGE_TIME;
     };
 
