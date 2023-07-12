@@ -130,6 +130,26 @@ export class Canvas {
     }
 
 
+    public fillCircle(cx : number, cy : number, radius : number) : void {
+
+        let c = this.ctx;
+
+        let r : number;
+        let ny : number;
+
+        cx |= 0;
+        cy |= 0;
+
+        for (let y = -radius; y <= radius; ++ y) {
+
+            ny = y/radius;
+
+            r = Math.round(Math.sqrt(1 - ny*ny) * radius);
+            c.fillRect(cx - r, cy + y, r*2, 1);
+        }
+    }
+
+
     public drawBitmap(bmp : Bitmap | undefined, dx : number, dy : number, 
         sx = 0, sy = 0, sw = bmp.width, sh = bmp.height) : void {
 
@@ -208,4 +228,11 @@ export class Canvas {
         this.flipFlag = Flip.None;
         this.rotationFlag = 0;
     }
+
+
+    public setAlpha(alpha = 1.0) : void {
+
+        this.ctx.globalAlpha = alpha;
+    }
+    
 }

@@ -15,6 +15,8 @@ export class GameObject {
     protected target : Vector;
     protected friction : Vector;
 
+    protected baseSpeedFactor : 0 | 1 = 1;
+
     protected center : Vector;
     protected hitbox : Vector;
 
@@ -77,8 +79,8 @@ export class GameObject {
         if (!this.exist)
             return;
 
-        this.renderPos.x = this.pos.x + this.speed.x * event.delta + this.renderOffset.x;
-        this.renderPos.y = this.pos.y + (this.speed.y + baseSpeed) * event.delta + this.renderOffset.y;
+        this.renderPos.x = this.pos.x + this.speed.x * event.interpolationStep + this.renderOffset.x;
+        this.renderPos.y = this.pos.y + (this.speed.y + baseSpeed) * event.interpolationStep + this.renderOffset.y;
 
         this.updateEvent(baseSpeed, event);
     }
@@ -98,8 +100,8 @@ export class GameObject {
             this.speed.y, this.target.y, 
             this.friction.y*event.step);
 
-        this.pos.x += this.speed.x * event.step;
-        this.pos.y += (this.speed.y + baseSpeed) * event.step;
+        this.pos.x += this.speed.x*event.step;
+        this.pos.y += (this.speed.y + baseSpeed*this.baseSpeedFactor)*event.step;
     }
 
 
@@ -147,6 +149,9 @@ export class GameObject {
 
 
     public doesOverlay = (o : GameObject) : boolean => this.doesOverlayRect(o, o.pos, o.center, o.hitbox);
+
+
+    public getPosition = () : Vector => this.pos.clone();
 }
 
 

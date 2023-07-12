@@ -6,6 +6,8 @@ import { nextObject } from "./gameobject.js";
 import { Player } from "./player.js";
 import { Enemy, EnemyType } from "./enemy.js";
 import { weightedProbability } from "../common/math.js";
+import { Particle, ParticleType } from "./particle.js";
+import { Vector } from "../common/vector.js";
 
 
 export const PLATFORM_OFFSET = 48;
@@ -18,6 +20,7 @@ export class Stage {
     private enemies : Enemy[];
     private coins : Coin[];
     private coinPositions : boolean[];
+    private particles : Particle[];
     
     private player : Player;
 
@@ -36,6 +39,8 @@ export class Stage {
         this.coinPositions = (new Array<boolean> ()).fill(false);
         this.enemies = new Array<Enemy> ();
     
+        this.particles = new Array<Particle> ();
+
         this.player = new Player(event.screenWidth/2, event.screenHeight/2);
     }
 
@@ -158,7 +163,7 @@ export class Stage {
 
     private spawnObjects(platform : Platform, event : CoreEvent) : void {
 
-        // TODO: Fill would probably takes less space, but I don't want
+        // TODO: 'Array.fill' would probably takes less space, but I don't want
         // to create new arrays if not necessary, even though this does 
         // not happen each frame
         for (let i = 0; i < this.coinPositions.length; ++ i) {
@@ -171,9 +176,43 @@ export class Stage {
     }
 
 
+    private spawnParticles(pos : Vector, type : ParticleType) : void {
+
+        const COUNT = [4, 12];
+        const BASE_SPEED_MIN = [3.0, 1.0];
+        const BASE_SPEED_MAX = [3.0, 4.0];
+        const SPEED_Y_BONUS = -3.0;
+
+        let count = COUNT[type as number];
+
+        let angleStep = Math.PI*2 / count;
+        let angleStart = angleStep/2;
+        let angle : number;
+        let speed : number;
+
+        for (let i = 0; i < count; ++ i) {
+
+            speed = BASE_SPEED_MIN[type as number] + 
+                Math.random() * (BASE_SPEED_MAX[type as number] - BASE_SPEED_MIN[type as number]);
+
+            angle = angleStart + i*angleStep;
+            nextObject<Particle>(this.particles, Particle)
+                .spawn(pos.x, pos.y, 
+                    Math.cos(angle) * speed,
+                    Math.sin(angle) * speed + SPEED_Y_BONUS,
+                    type);
+        }
+    }
+
+
     public update(moveSpeed : number, event : CoreEvent) : void {
 
         const CLOUD_SPEED = 0.125;
+
+        for (let p of this.particles) {
+
+            p.update(moveSpeed, event);
+        }
 
         for (let c of this.coins) {
 
@@ -198,10 +237,18 @@ export class Stage {
 
     public updatePhysics(moveSpeed : number, event : CoreEvent) : void {
 
+        for (let p of this.particles) {
+
+            p.updatePhysics(moveSpeed, event);
+        }
+
         for (let c of this.coins) {
 
             c.updatePhysics(moveSpeed, event);
-            c.playerCollision(this.player, event);
+            if (c.playerCollision(this.player, event)) {
+
+                this.spawnParticles(c.getPosition(), ParticleType.Star);
+            }
         }
 
         this.player.updatePhysics(moveSpeed, event);
@@ -209,7 +256,10 @@ export class Stage {
         for (let e of this.enemies) {
 
             e.updatePhysics(moveSpeed, event);
-            e.playerCollision(this.player, moveSpeed, event);
+            if (e.playerCollision(this.player, moveSpeed, event)) {
+
+                this.spawnParticles(e.getPosition(), ParticleType.Blood);
+            }
         }
 
         for (let p of this.platforms) {
@@ -230,6 +280,10 @@ export class Stage {
         let bmp1 = canvas.getBitmap("bmp1");
 
         let y = canvas.height - 120;
+
+        // Sun
+        canvas.fillColor("#ffffaa");
+        canvas.fillCircle(112, 64, 24);
 
         // Clouds
         for (let i = 0; i < 2; ++ i) {
@@ -256,6 +310,11 @@ export class Stage {
         let bmp1 = canvas.getBitmap("bmp1");
 
         for (let p of this.platforms) {
+
+            p.draw(canvas, bmp1);
+        }
+
+        for (let p of this.particles) {
 
             p.draw(canvas, bmp1);
         }

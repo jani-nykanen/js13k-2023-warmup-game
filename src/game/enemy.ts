@@ -76,6 +76,9 @@ export class Enemy extends GameObject {
             break;
         }
 
+        // TODO: Probably not necessary as there was a bug
+        // in the GameObject update where the position was
+        // interpolated wrong
         let maxY = this.attachedPlatform?.getPosition();
         if (this.renderPos.y+8 > maxY) {
 
@@ -279,7 +282,7 @@ export class Enemy extends GameObject {
         // TODO: Kill player
         if (player.doesOverlay(this)) {
 
-            return true;
+            // ...
         }
         return false;
     }
