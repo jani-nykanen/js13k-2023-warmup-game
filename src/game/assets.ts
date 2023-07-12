@@ -39,8 +39,8 @@ const COLOR_TABLE_1 = [
 
 const createCloudBitmap = (c : CanvasRenderingContext2D, width : number, height : number) : void => {
 
-    const CLOUD_COUNT = 6;
-    const CLOUD_HEIGHT = 8;
+    const CLOUD_COUNT = 5;
+    const CLOUD_HEIGHT = 12;
 
     let cloudWidth = width / CLOUD_COUNT;
     let step = width / cloudWidth;
@@ -66,5 +66,5 @@ export const loadAndProcessBitmaps = (event : CoreEvent) : void => {
     const PATH = "bitmap1.png";
 
     event.loadFourColorBitmap("bmp1", PATH, 0, 9, COLOR_TABLE_1, PALETTE);
-    event.createCustomBitmap("clouds", event.screenWidth, 64, createCloudBitmap);
+    event.createCustomBitmap("clouds", event.screenWidth, 96, createCloudBitmap);
 }

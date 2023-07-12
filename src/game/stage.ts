@@ -229,7 +229,7 @@ export class Stage {
         let bmpClouds = canvas.getBitmap("clouds");
         let bmp1 = canvas.getBitmap("bmp1");
 
-        let y = canvas.height-96;
+        let y = canvas.height - 120;
 
         // Clouds
         for (let i = 0; i < 2; ++ i) {

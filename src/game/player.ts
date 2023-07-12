@@ -33,7 +33,7 @@ export class Player extends GameObject {
 
     private control(event : CoreEvent) : void {
 
-        const BASE_SPEED = 1.0;
+        const BASE_SPEED = 1.5;
         const BASE_GRAVITY = 2.0;
         const JUMP_TIME = 20;
         const DOUBLE_JUMP_TIME = 12;
