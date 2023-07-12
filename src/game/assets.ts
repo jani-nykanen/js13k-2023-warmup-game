@@ -18,11 +18,13 @@ const PALETTE = [
     "aaaaffff", // C Player 2
     "aa0000ff", // D Dark(ish) red
     "005500ff", // E Dark(ish) gren
+    "0055aaff", // F Darker blue
+    "55aaffff", // G Lighter blue,
 
 ]
 
 const COLOR_TABLE_1 = [
-    "1078", "1078", "1560", "1560", "1560", "0000",
+    "1078", "1078", "1560", "1560", "1560", "0FG4",
     "1560", "1560", "1340", "1D60", "1560", "0000",
     "19A0", "19A0", "19A0", "19A0", "14C0", "14C0",
     "19A0", "19A0", "19A0", "19A0", "1BC0", "1BC0",
@@ -35,9 +37,34 @@ const COLOR_TABLE_1 = [
 ];
 
 
+const createCloudBitmap = (c : CanvasRenderingContext2D, width : number, height : number) : void => {
+
+    const CLOUD_COUNT = 6;
+    const CLOUD_HEIGHT = 8;
+
+    let cloudWidth = width / CLOUD_COUNT;
+    let step = width / cloudWidth;
+
+    let f = (t : number) : number => (1.0 - Math.abs(Math.sin(t * step * Math.PI)) + Math.sin(t * Math.PI*2)) * CLOUD_HEIGHT;
+
+    c.clearRect(0, 0, width, height);
+
+    let y : number;
+
+    c.fillStyle = "#ffffff";
+    for (let x = 0; x < width; ++ x) {
+
+        y =  height/2 + Math.ceil(f(x / width));
+        c.fillRect(x, y, 1, height-y);
+    }
+
+}
+
+
 export const loadAndProcessBitmaps = (event : CoreEvent) : void => {
 
     const PATH = "bitmap1.png";
 
     event.loadFourColorBitmap("bmp1", PATH, 0, 9, COLOR_TABLE_1, PALETTE);
+    event.createCustomBitmap("clouds", event.screenWidth, 64, createCloudBitmap);
 }

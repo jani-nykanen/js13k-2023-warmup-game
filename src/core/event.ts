@@ -1,4 +1,4 @@
-import { Bitmap, processFourColorBitmap } from "../renderer/bitmap.js";
+import { Bitmap, createCustomBitmap, processFourColorBitmap } from "../renderer/bitmap.js";
 import { Canvas } from "../renderer/canvas.js";
 import { ActionMap, Input } from "./input.js";
 
@@ -92,6 +92,16 @@ export class CoreEvent {
                 img, 8, 8, startLine, endLine, colorTable, palette));
         };
         img.src = path;
+    }
+
+
+    public createCustomBitmap(name : string,
+        width : number, height : number, 
+        cb : (c : CanvasRenderingContext2D, width : number, height : number) => void,
+        convertToRGB222 = false) : void  {
+    
+        let bmp = createCustomBitmap(width, height, cb, convertToRGB222);
+        this.bitmaps.set(name, bmp);
     }
 
     

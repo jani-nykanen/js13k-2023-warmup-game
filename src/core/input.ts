@@ -101,7 +101,6 @@ export class Input {
             if ((state = (this.keys.get(k) as InputState) ) != InputState.Up)
                 break;
         }
-
         return state;
     }
 }

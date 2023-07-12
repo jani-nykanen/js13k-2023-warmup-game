@@ -46,6 +46,7 @@ export class Game implements Program {
 
         canvas.clear(rgb(85, 170, 255));
 
+        this.stage.drawBackground(canvas);
         this.stage.draw(canvas);
     }
 

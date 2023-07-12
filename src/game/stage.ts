@@ -21,6 +21,8 @@ export class Stage {
     
     private player : Player;
 
+    private cloudPos : number = 0.0;
+
 
     constructor(event : CoreEvent) {
 
@@ -171,6 +173,8 @@ export class Stage {
 
     public update(moveSpeed : number, event : CoreEvent) : void {
 
+        const CLOUD_SPEED = 0.125;
+
         for (let c of this.coins) {
 
             c.update(moveSpeed, event);
@@ -187,6 +191,8 @@ export class Stage {
         }
 
         this.player.update(moveSpeed, event);
+
+        this.cloudPos = (this.cloudPos + CLOUD_SPEED*event.delta) % event.screenWidth;
     }
 
 
@@ -218,25 +224,52 @@ export class Stage {
     }
 
 
+    public drawBackground(canvas : Canvas) : void {
+
+        let bmpClouds = canvas.getBitmap("clouds");
+        let bmp1 = canvas.getBitmap("bmp1");
+
+        let y = canvas.height-96;
+
+        // Clouds
+        for (let i = 0; i < 2; ++ i) {
+            
+            canvas.drawBitmap(bmpClouds, -(this.cloudPos | 0) + i * bmpClouds.width, y);
+        }
+
+        // Horizon
+        y += bmpClouds.height;
+        for (let x = 0; x < canvas.width/8; ++ x) {
+
+            canvas.drawBitmap(bmp1, x*8, y, 40, 0, 8, 8);
+        }
+
+        // Ocean
+        y += 8;
+        canvas.fillColor("#0055aa");
+        canvas.fillRect(0, y, canvas.width, canvas.height-y);
+    }
+
+
     public draw(canvas : Canvas) : void {
 
-        let bmp = canvas.getBitmap("bmp1");
+        let bmp1 = canvas.getBitmap("bmp1");
 
         for (let p of this.platforms) {
 
-            p.draw(canvas, bmp);
+            p.draw(canvas, bmp1);
         }
 
         for (let e of this.enemies) {
 
-            e.draw(canvas, bmp);
+            e.draw(canvas, bmp1);
         }
 
         for (let c of this.coins) {
 
-            c.draw(canvas, bmp);
+            c.draw(canvas, bmp1);
         }
 
-        this.player.draw(canvas, bmp);
+        this.player.draw(canvas, bmp1);
     }
 }

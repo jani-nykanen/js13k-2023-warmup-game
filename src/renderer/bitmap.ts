@@ -89,3 +89,25 @@ export const processFourColorBitmap = (image : HTMLImageElement,
 
     return canvas as Bitmap;
 } 
+
+
+
+export const createCustomBitmap = (width : number, height : number, 
+    cb : (c : CanvasRenderingContext2D, width : number, height : number) => void,
+    convertToRGB222 = false) : Bitmap => {
+
+    let canvas = document.createElement("canvas");
+    let ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
+
+    canvas.width = width;
+    canvas.height = height;
+
+    cb(ctx, width, height);
+
+    // TODO: Convert to rgb222 palette, if required
+    if (convertToRGB222) {
+
+        // ...
+    }
+    return canvas;
+}
