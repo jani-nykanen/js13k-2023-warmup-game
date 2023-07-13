@@ -48,7 +48,7 @@ export class GameObject {
         for (let i = -1; i <= 1; ++ i) {
 
             left = this.pos.x + this.center.x - this.hitbox.x/2 + event.screenWidth*i;
-            right = left + this.hitbox.x + event.screenWidth*i;
+            right = left + this.hitbox.x;
 
             if (right >= x && left < x + w)
                 return true;
@@ -112,7 +112,7 @@ export class GameObject {
         let py1 = this.pos.y + this.center.y + this.hitbox.y/2;
         let py2 = py1 + (this.speed.y + moveSpeed) * event.step;
 
-        if (this.speed.y <= speedCheckLimit || 
+        if (this.speed.y < speedCheckLimit || 
             !this.setCollisionHorizontalBounds(x, w, event))
             return false;
 
@@ -123,7 +123,6 @@ export class GameObject {
                 this.speed.y = 0;
 
             this.floorCollisionEvent(event, special);
-
             return true;
         }
         return false;

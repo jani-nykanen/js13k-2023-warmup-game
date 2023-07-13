@@ -5,13 +5,13 @@ import { loadAndProcessBitmaps } from "./assets.js"
 import { Stage } from "./stage.js";
 
 
-const MOVE_SPEED = 1.0;
-
-
 export class Game implements Program {
 
 
     private stage : Stage;
+
+    private moveSpeed : number = 0.0;
+    private gameTimer : number = 0.0;
 
 
     constructor(event : CoreEvent) {
@@ -20,6 +20,26 @@ export class Game implements Program {
 
         // Need to initialize things here to avoid some warnings by Closure compiler...
         this.stage = new Stage(event);
+    }
+
+
+    private computeMoveSpeed() : void {
+
+        const INITIAL_SPEED_UP_TIME = 120;
+        const BASE_SPEED = 0.5;
+        const MAX_SPEED = 2.0;
+        const RAMP_TIME = 30*60;
+        const RAMP_MAGNITUDE = 0.25;
+
+        if (this.gameTimer < INITIAL_SPEED_UP_TIME) {
+
+            this.moveSpeed = this.gameTimer/(INITIAL_SPEED_UP_TIME) * BASE_SPEED;
+            return;
+        }
+
+        this.moveSpeed = Math.min(MAX_SPEED,
+            BASE_SPEED + Math.floor((this.gameTimer - INITIAL_SPEED_UP_TIME) / RAMP_TIME) * RAMP_MAGNITUDE
+        );
     }
 
 
@@ -53,7 +73,10 @@ export class Game implements Program {
 
     public update(event : CoreEvent) : void {
 
-        this.stage.update(MOVE_SPEED, event);
+        this.gameTimer += event.step;
+        this.computeMoveSpeed();
+
+        this.stage.update(this.gameTimer, this.moveSpeed, event);
     }
 
 

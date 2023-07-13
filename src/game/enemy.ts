@@ -33,6 +33,8 @@ export class Enemy extends GameObject {
     private specialTimer : number = 0;
     private touchGround : boolean = true;
 
+    private harmless : boolean = false;
+
     private attachedPlatform : Platform | undefined = undefined;
 
 
@@ -97,8 +99,12 @@ export class Enemy extends GameObject {
         const GRAVITY = 4.0;
         // TODO: Tempoprary (but a permanent typo, it seems)
         const MARGIN = 16;
+        const BULLET_TARGET_SPEED = 12.0;
+        const BULLET_FRICTION_MOD = 0.025;
 
         let p = this.attachedPlatform?.getPosition() - 8;
+
+        this.harmless = this.pos.y < -8;
 
         switch (this.enemyType) {
 
@@ -140,6 +146,36 @@ export class Enemy extends GameObject {
             }
 
             break;
+
+        case EnemyType.Bullet:
+
+            if (this.pos.y < -8)
+                break;
+
+            if (this.specialTimer > 0) {
+
+                this.harmless = true;
+
+                this.speed.x = 0.0;
+                this.specialTimer -= baseSpeed * event.step;
+                if (this.specialTimer <= 0) {
+
+                    this.speed.x = 0;
+                    this.target.x = BULLET_TARGET_SPEED * this.dir;
+                }
+            }
+            else {
+
+                this.friction.x = BULLET_FRICTION_MOD * (baseSpeed + 1.0);
+
+                if ((this.dir > 0 && this.pos.x >= event.screenWidth+8) ||
+                    (this.dir < 0 && this.pos.x < -8)) {
+
+                    this.exist = false;
+                }
+            }
+
+            break;
             
         default:
             break
@@ -177,9 +213,10 @@ export class Enemy extends GameObject {
 
 
     public spawn(x : number, platform : Platform, type : EnemyType,
-        leftBorder = x, rightBorder = x) : void {
+        event : CoreEvent, leftBorder = x, rightBorder = x) : void {
 
         const OFFSET = [0, -8, -PLATFORM_OFFSET/2 + 8, -8, 0];
+        const MAX_WAIT = 150;
 
         this.pos = new Vector(x, platform.getPosition() + OFFSET[type as number]);
         this.yoffset = 0.0; 
@@ -201,6 +238,15 @@ export class Enemy extends GameObject {
             this.dir = Math.random() < 0.5 ? -1 : 1;
             this.flip = this.dir == 1 ? Flip.Horizontal : Flip.None;
         }
+
+        if (type == EnemyType.Bullet) {
+
+            this.specialTimer = (Math.random() * MAX_WAIT) | 0;
+            this.pos.x = this.dir > 0 ? -8 : event.screenWidth+8;
+            this.pos.y -= PLATFORM_OFFSET/2 - 8;
+        }
+
+        this.harmless = false;
 
         this.exist = true;
         this.dying = false;
@@ -268,6 +314,11 @@ export class Enemy extends GameObject {
 
                 break;
 
+            case EnemyType.Bullet:
+
+                canvas.drawBitmap(bmp, px, py + 2 - 4*stepy, 16, 64, 16, 16);
+                break;
+
             default:
                 break;
         }
@@ -283,7 +334,8 @@ export class Enemy extends GameObject {
         const DEATH_START_SPEED = 1.0;
 
         if (!this.exist || !player.doesExist() ||
-            this.dying || player.isDying())
+            this.dying || player.isDying() ||
+            this.harmless)
             return false;
 
         if (player.floorCollision(

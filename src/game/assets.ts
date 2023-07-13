@@ -32,16 +32,16 @@ const COLOR_TABLE_1 = [
     "1BC0", "1BC0", "1BC0", "1BC0", "1BC0", "1BC0",
     "1BC0", "1BC0", "14D0", "19D0", "14D0", "14D0",
     "1BC0", "14C0", "14D0", "14D0", "0400", "0400",
-    "1D00", "1D00", "0000", "0000", "1870", "1E70",
-    "1D00", "1D00", "0000", "0000", "1E70", "1E70",
+    "1D00", "1D00", "1430", "1230", "1870", "1E70",
+    "1D00", "1D00", "1230", "1230", "1E70", "1E70",
     "000A", "000A", "000A", "000A", "000A", "000A",
 ];
 
 
 const createCloudBitmap = (c : CanvasRenderingContext2D, width : number, height : number) : void => {
 
-    const CLOUD_COUNT = 5;
-    const CLOUD_HEIGHT = 12;
+    const CLOUD_COUNT = 6;
+    const CLOUD_HEIGHT = 10;
 
     let cloudWidth = width / CLOUD_COUNT;
     let step = width / cloudWidth;
@@ -71,5 +71,5 @@ export const loadAndProcessBitmaps = (event : CoreEvent) : void => {
     event.loadFourColorBitmap("font", FONT_PATH, 0, 3, 
         (new Array<string>(16*4)).fill("0004"),
         PALETTE);
-    event.createCustomBitmap("clouds", event.screenWidth, 96, createCloudBitmap);
+    event.createCustomBitmap("clouds", event.screenWidth, 80, createCloudBitmap);
 }

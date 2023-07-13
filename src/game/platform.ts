@@ -17,18 +17,19 @@ export class Platform {
     public readonly width : number;
 
 
-    constructor(startPos : number, width : number) {
+    constructor(startPos : number, width : number, initial = false) {
 
         this.posY = startPos;
         this.width = width;
 
         this.tiles = new Array<number> (width);
         this.spikes = new Array<boolean> (width);
-        this.computeTiles();
+
+        this.computeTiles(initial);
     }
 
 
-    private computeTiles() : void {
+    private computeTiles(initial = false) : void {
 
         const BRIDGE_PROB = 0.5;
         const SPIKE_PROB = 0.25;
@@ -36,7 +37,7 @@ export class Platform {
         let max = this.width/2;
 
         let counter = (Math.random() * max) | 0;
-        let mode = (Math.random() * 2) | 0;
+        let mode = initial ? 1 : (Math.random() * 2) | 0;
 
         let maxSpikeCount = 0;
         let basePlatformCount = 0;
@@ -58,8 +59,8 @@ export class Platform {
                 counter += (Math.random() * max + 1) | 0;
                 if (mode == 1) {
 
-                    mode = Math.random() < BRIDGE_PROB ? 2 : 0;
-                    if (i + counter >= this.width-1) {
+                    mode = (initial || Math.random() < BRIDGE_PROB) ? 2 : 0;
+                    if (!initial && i + counter >= this.width-1) {
 
                         mode = 0;
                     }
@@ -68,6 +69,9 @@ export class Platform {
                 mode = 1;
             }
         }
+
+        if (initial)
+            return;
 
         // Spikes
         maxSpikeCount = (Math.random() * basePlatformCount/2) | 0;
@@ -112,7 +116,7 @@ export class Platform {
 
         const BRIDGE_OFFSET = -5;
 
-        let p = Math.floor(this.posY);
+        let p = Math.round(this.posY);
 
         let sx : number;
         let middle : number;

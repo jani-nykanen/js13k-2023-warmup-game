@@ -5,7 +5,7 @@ import { Coin } from "./coin.js";
 import { nextObject } from "./gameobject.js";
 import { Player } from "./player.js";
 import { Enemy, EnemyType } from "./enemy.js";
-import { weightedProbability } from "../common/math.js";
+import { weightedProbability, weightedProbabilityInterpolate } from "../common/math.js";
 import { Particle } from "./particle.js";
 import { Vector } from "../common/vector.js";
 
@@ -29,10 +29,14 @@ export class Stage {
 
     constructor(event : CoreEvent) {
 
+        const INITIAL_PLATFORM_INDEX = 2;
+
         this.platforms = new Array<Platform> ();
         for (let y = 0; y < 6; ++ y) {
 
-            this.platforms[y] = new Platform(y*PLATFORM_OFFSET, (event.screenWidth/16) | 0);
+            this.platforms[y] = new Platform(y*PLATFORM_OFFSET, 
+                (event.screenWidth/16) | 0, 
+                y == INITIAL_PLATFORM_INDEX);
         }
         
         this.coins = new Array<Coin> ();
@@ -41,7 +45,7 @@ export class Stage {
     
         this.particles = new Array<Particle> ();
 
-        this.player = new Player(event.screenWidth/2, event.screenHeight/2);
+        this.player = new Player(event.screenWidth/2, PLATFORM_OFFSET*2-8);
     }
 
 
@@ -106,20 +110,32 @@ export class Stage {
     }
 
 
-    private spawnEnemy(platform : Platform, event : CoreEvent) : void {
+    private spawnEnemy(time : number, platform : Platform, event : CoreEvent) : void {
 
-        const WEIGHTS = [
-            0.25, // Unknown
-            0.25, // Ground, moving
-            0.25, // Flying
-            0.25,  // Ground, jumping
+        const MAX_INTERPOLATION_TIME = 120*60;
+
+        const WEIGHTS_1 = [
+            0.5, // Unknown
+            0.30, // Ground, moving
+            0.05, // Flying
+            0.15,  // Ground, jumping
             0.0   // Bullet
+        ]; 
+
+        const WEIGHTS_2 = [
+            0.20, // Unknown
+            0.20, // Ground, moving
+            0.20, // Flying
+            0.20,  // Ground, jumping
+            0.20   // Bullet
         ]; 
 
         let left : number;
         let right : number;
 
-        let i = weightedProbability(WEIGHTS);
+        let t = Math.min(1.0, time/MAX_INTERPOLATION_TIME);
+
+        let i = weightedProbabilityInterpolate(WEIGHTS_1, WEIGHTS_2, t);
         if (i == 0)
             return;
 
@@ -150,7 +166,7 @@ export class Stage {
 
                 nextObject<Enemy>(this.enemies, Enemy).spawn(
                     x*16 + 8, platform,
-                    type,
+                    type, event,
                     (left+1)*16, right*16);
                 break;
             } 
@@ -161,7 +177,7 @@ export class Stage {
     }
 
 
-    private spawnObjects(platform : Platform, event : CoreEvent) : void {
+    private spawnObjects(timer : number, platform : Platform, event : CoreEvent) : void {
 
         // TODO: 'Array.fill' would probably takes less space, but I don't want
         // to create new arrays if not necessary, even though this does 
@@ -172,7 +188,7 @@ export class Stage {
         }
 
         this.spawnCoins(platform, event);
-        this.spawnEnemy(platform, event);
+        this.spawnEnemy(timer, platform, event);
     }
 
 
@@ -202,7 +218,7 @@ export class Stage {
     }
 
 
-    public update(moveSpeed : number, event : CoreEvent) : void {
+    public update(gameTimer : number, moveSpeed : number, event : CoreEvent) : void {
 
         const CLOUD_SPEED = 0.125;
 
@@ -231,10 +247,9 @@ export class Stage {
         for (let p of this.platforms) {
 
             p.objectCollision(this.player, moveSpeed, event);
-            
             if (p.update(moveSpeed, event)) {
 
-                this.spawnObjects(p, event);
+                this.spawnObjects(gameTimer, p, event);
             }
         }   
 
