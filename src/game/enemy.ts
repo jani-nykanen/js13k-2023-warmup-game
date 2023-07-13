@@ -43,6 +43,16 @@ export class Enemy extends GameObject {
     }
 
 
+    protected die(event : CoreEvent) : boolean {
+
+        const GRAVITY = 6.0;
+
+        this.target.y = GRAVITY;
+
+        return this.pos.y - 8 > event.screenHeight;
+    }
+
+
     protected updateEvent(baseSpeed : number, event : CoreEvent) : void {
 
         const ANIM_BASE_SPEED = [0, 6, 10, 0, 0];
@@ -199,6 +209,7 @@ export class Enemy extends GameObject {
         }
 
         this.exist = true;
+        this.dying = false;
     }
 
 
@@ -214,7 +225,16 @@ export class Enemy extends GameObject {
         let px = Math.round(this.renderPos.x) - 8;
         let py = Math.round(this.renderPos.y) - 8;
 
-        canvas.setFlag("flip", this.flip);
+        let flip = this.flip;
+        let stepy = 0;
+
+        if (this.dying) {
+
+            flip |= Flip.Vertical;
+            stepy = 1;
+        }
+
+        canvas.setFlag("flip", flip);
         switch (this.enemyType) {
 
             case EnemyType.MovingGroundEnemy:
@@ -222,8 +242,8 @@ export class Enemy extends GameObject {
                 sx = frame == 0 ? 16 : 32;
                 sy = frame == 0 ? 56 : 48;
 
-                canvas.drawBitmap(bmp, px, py+1, 16, 48, 16, 8);
-                canvas.drawBitmap(bmp, px, py+9, sx, sy, 16, 8);
+                canvas.drawBitmap(bmp, px, py+1 + stepy*8, 16, 48, 16, 8);
+                canvas.drawBitmap(bmp, px, py+1 + (1 - stepy)*8, sx, sy, 16, 8);
 
                 break;
 
@@ -243,14 +263,14 @@ export class Enemy extends GameObject {
                 py += (frame-1);
 
                 // Eye balls
-                canvas.drawBitmap(bmp, px, py+4, 32, 56, 16, 8);
+                canvas.drawBitmap(bmp, px, py + 4 + 5*stepy, 32, 56, 16, 8);
                 // Nose
-                canvas.drawBitmap(bmp, px+4, py+7, 24, 8, 8, 8);
+                canvas.drawBitmap(bmp, px+4, py+7-stepy, 24, 8, 8, 8);
 
                 // Pupils
-                py += (frame-1);
-                canvas.fillRect(px+5, py+8, 1, 1);
-                canvas.fillRect(px+10, py+8, 1, 1);
+                py += (frame-1) + 4*stepy;
+                canvas.fillRect(px+5, py + 8, 1, 1);
+                canvas.fillRect(px+10, py + 8, 1, 1);
 
                 break;
 
@@ -266,8 +286,10 @@ export class Enemy extends GameObject {
 
         const STOMP_W = 20;
         const STOMP_Y = -6;
+        const DEATH_START_SPEED = 1.0;
 
-        if (!this.exist || !player.doesExist())
+        if (!this.exist || !player.doesExist() ||
+            this.dying || player.isDying())
             return false;
 
         if (player.floorCollision(
@@ -275,7 +297,12 @@ export class Enemy extends GameObject {
             this.pos.y + STOMP_Y, 
             STOMP_W, moveSpeed, event, true, -1.0)) {
 
-            this.exist = false;
+            this.dying = true;
+            this.speed.zero();
+            this.target.zero();
+
+            this.speed.y = DEATH_START_SPEED;
+
             return true;
         }
 

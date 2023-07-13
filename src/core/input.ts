@@ -39,7 +39,11 @@ export class Input {
 
         for (let k of actions.keys()) {
 
-            this.prevent.push(...actions.get(k).keys);
+            for (let j of actions.get(k).keys) {
+
+                this.prevent.push(j);
+                this.keys.set(j, InputState.Up);
+            }
         }
         
         window.addEventListener("keydown", (e : KeyboardEvent) => {

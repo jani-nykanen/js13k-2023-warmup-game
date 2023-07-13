@@ -6,7 +6,13 @@ import { GameObject } from "./gameobject.js";
 import { Player } from "./player.js";
 
 
+const DEATH_TIME = 15;
+
+
 export class Coin extends GameObject {
+
+
+    private deathTimer : number = 0;
 
 
     constructor() {
@@ -34,12 +40,19 @@ export class Coin extends GameObject {
     }
 
 
+    protected die(event: CoreEvent) : boolean {
+        
+        return (this.deathTimer += event.delta) >= DEATH_TIME;
+    }
+
+
     public spawn(x : number, y : number) : void {
 
         this.pos = new Vector(x, y);
         this.renderPos = this.pos.clone();
         this.spr.setFrame(0);
 
+        this.dying = false;
         this.exist = true;
     }
 
@@ -48,9 +61,23 @@ export class Coin extends GameObject {
 
         const SOURCE_X = [0, 16, 24, 16];
         const SOURCE_W = [16, 8, 8, 8];
+        const DEATH_RING_RADIUS = 16;
 
         if (!this.exist)
             return;
+
+        let t : number;
+        if (this.dying) {
+
+            t = this.deathTimer / DEATH_TIME;
+
+            canvas.setAlpha();
+            canvas.fillColor("#ffff55");
+            canvas.fillRing(this.renderPos.x, this.renderPos.y, 
+                t*t*DEATH_RING_RADIUS, t*DEATH_RING_RADIUS);    
+
+            return;
+        }
 
         let frame = this.spr.getFrame();
         let sx = SOURCE_X[frame];
@@ -67,9 +94,13 @@ export class Coin extends GameObject {
 
     public playerCollision(player : Player, event : CoreEvent) : boolean {
 
+        if (!this.exist || this.dying || player.isDying() || !player.doesExist())
+            return false;
+
         if (this.doesOverlay(player)) {
 
-            this.exist = false;
+            this.dying = true;
+            this.deathTimer = 0.0;
             return true;
         }
         return false;

@@ -145,8 +145,56 @@ export class Canvas {
             ny = y/radius;
 
             r = Math.round(Math.sqrt(1 - ny*ny) * radius);
+            if (r <= 0)
+                continue;
+
             c.fillRect(cx - r, cy + y, r*2, 1);
         }
+    }
+
+
+    public fillRing(cx : number, cy : number, 
+        innerRadius : number, outerRadius : number) : void {
+        
+        let c = this.ctx;
+
+        let r1 : number;
+        let r2 : number;
+        let ny1 : number;
+        let ny2 : number;
+
+        if (innerRadius >= outerRadius)
+            return;
+
+        cx |= 0;
+        cy |= 0;
+
+        for (let y = -outerRadius; y <= outerRadius; ++ y) {
+
+            ny1 = y/outerRadius;
+            r1 = Math.round(Math.sqrt(1 - ny1*ny1) * outerRadius);
+            if (r1 <= 0)
+                continue;
+
+            r2 = 0;
+            if (Math.abs(y) < innerRadius) {
+
+                ny2 = y/innerRadius;
+                r2 = Math.round(Math.sqrt(1 - ny2*ny2) * innerRadius);
+            }
+
+            if (r2 <= 0) {
+
+                c.fillRect(cx - r1, cy + y, r1*2, 1);
+            }
+            else {
+
+                // Left-most part
+                c.fillRect(cx - r1, cy + y, r1 - r2, 1);
+                // Right-most part
+                c.fillRect(cx + r2, cy + y, r1 - r2, 1);
+            }
+        }    
     }
 
 
@@ -198,6 +246,50 @@ export class Canvas {
         if (saveState) {
 
             c.restore();
+        }
+    }
+
+
+    public drawText(font : Bitmap | undefined, str : string, 
+        dx : number, dy : number, 
+        xoff = 0.0, yoff = 0.0, align = TextAlign.Left) : void {
+
+        if (font == undefined)
+            return;
+
+        let cw = (font.width / 16) | 0;
+        let ch = cw;
+
+        let x = dx;
+        let y = dy;
+        let chr : number;
+
+        if (align == TextAlign.Center) {
+
+            dx -= (str.length * (cw + xoff)) / 2.0 ;
+            x = dx;
+        }
+        else if (align == TextAlign.Right) {
+            
+            dx -= (str.length * (cw + xoff));
+            x = dx;
+        }
+
+        for (let i = 0; i < str.length; ++ i) {
+
+            chr = str.charCodeAt(i);
+            if (chr == '\n'.charCodeAt(0)) {
+
+                x = dx;
+                y += ch + yoff;
+                continue;
+            }
+            chr -= 32;
+
+            this.drawBitmap(font, x, y,
+                (chr % 16) * cw, ((chr/16)|0) * ch, cw, ch);
+
+            x += cw + xoff;
         }
     }
 

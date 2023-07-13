@@ -23,6 +23,7 @@ export class GameObject {
     protected spr : Sprite;
 
     protected exist : boolean;
+    protected dying : boolean;
 
 
     constructor(x = 0, y = 0, exist = false) {
@@ -73,6 +74,8 @@ export class GameObject {
     protected updateEvent(baseSpeed : number, event : CoreEvent) : void {};
     protected updatePhysicsEvent(baseSpeed : number, event : CoreEvent) : void {};
 
+    protected die(event : CoreEvent) : boolean { return true; }
+
 
     public update(baseSpeed : number, event : CoreEvent) : void {
 
@@ -81,6 +84,15 @@ export class GameObject {
 
         this.renderPos.x = this.pos.x + this.speed.x * event.interpolationStep + this.renderOffset.x;
         this.renderPos.y = this.pos.y + (this.speed.y + baseSpeed) * event.interpolationStep + this.renderOffset.y;
+
+        if (this.dying) {
+
+            if (this.die(event)) {
+
+                this.exist = false;
+            }
+            return;
+        }
 
         this.updateEvent(baseSpeed, event);
     }
@@ -91,7 +103,10 @@ export class GameObject {
         if (!this.exist)
             return;
 
-        this.updatePhysicsEvent(baseSpeed, event);
+        if (!this.dying) {
+
+            this.updatePhysicsEvent(baseSpeed, event);
+        }
 
         this.speed.x = this.updateSpeedAxis(
             this.speed.x, this.target.x, 
@@ -138,6 +153,7 @@ export class GameObject {
 
 
     public doesExist = () : boolean => this.exist;
+    public isDying = () : boolean => this.dying;
 
 
     public doesOverlayRect= (o : GameObject, pos : Vector, center : Vector, hitbox : Vector) : boolean => 
