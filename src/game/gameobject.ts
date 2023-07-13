@@ -21,7 +21,7 @@ export class GameObject {
     protected spr : Sprite;
 
     protected exist : boolean;
-    protected dying : boolean;
+    protected dying : boolean = false;
 
 
     constructor(x = 0, y = 0, exist = false) {
@@ -35,7 +35,7 @@ export class GameObject {
         this.hitbox = new Vector();
 
         this.spr = new Sprite();
-
+        
         this.exist = exist;
     }
 

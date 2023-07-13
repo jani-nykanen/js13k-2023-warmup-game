@@ -1,3 +1,4 @@
 js
-closure.jar
+*.jar
+*.zip
 temp

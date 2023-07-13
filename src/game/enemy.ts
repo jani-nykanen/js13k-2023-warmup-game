@@ -23,11 +23,11 @@ export class Enemy extends GameObject {
 
     private yoffset : number = 0;
 
-    private enemyType : EnemyType;
+    private enemyType : EnemyType = EnemyType.Unknown;
     private flip : Flip = Flip.None;
 
-    private leftBorder : number;
-    private rightBorder : number;
+    private leftBorder : number = 0;
+    private rightBorder : number = 0;
     private dir : number = 0;
 
     private specialTimer : number = 0;
