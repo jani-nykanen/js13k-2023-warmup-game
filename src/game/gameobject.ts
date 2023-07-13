@@ -9,8 +9,6 @@ export class GameObject {
 
 
     protected pos : Vector;
-    protected renderPos : Vector;
-    protected renderOffset : Vector;
     protected speed : Vector;
     protected target : Vector;
     protected friction : Vector;
@@ -29,8 +27,6 @@ export class GameObject {
     constructor(x = 0, y = 0, exist = false) {
 
         this.pos = new Vector(x, y);
-        this.renderPos = this.pos.clone();
-        this.renderOffset = new Vector();
         this.speed = new Vector();
         this.target = new Vector();
         this.friction = new Vector(1.0, 1.0);
@@ -72,7 +68,6 @@ export class GameObject {
 
 
     protected updateEvent(baseSpeed : number, event : CoreEvent) : void {};
-    protected updatePhysicsEvent(baseSpeed : number, event : CoreEvent) : void {};
 
     protected die(event : CoreEvent) : boolean { return true; }
 
@@ -82,32 +77,15 @@ export class GameObject {
         if (!this.exist)
             return;
 
-        this.renderPos.x = this.pos.x + this.speed.x * event.interpolationStep + this.renderOffset.x;
-        this.renderPos.y = this.pos.y + (this.speed.y + baseSpeed) * event.interpolationStep + this.renderOffset.y;
-
-        if (this.dying) {
-
-            if (this.die(event)) {
-
-                this.exist = false;
-            }
-            return;
-        }
-
-        this.updateEvent(baseSpeed, event);
-    }
-
-
-    public updatePhysics(baseSpeed : number, event : CoreEvent) : void {
-
-        if (!this.exist)
-            return;
-
         if (!this.dying) {
 
-            this.updatePhysicsEvent(baseSpeed, event);
+            this.updateEvent(baseSpeed, event);
         }
+        else if (this.die(event)) {
 
+            this.exist = false;
+        }
+        
         this.speed.x = this.updateSpeedAxis(
             this.speed.x, this.target.x, 
             this.friction.x*event.step);

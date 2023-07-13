@@ -10,22 +10,13 @@ const LIFETIME = 120.0;
 
 
 
-export const enum ParticleType {
-
-    Star = 0,
-    Blood = 1,
-
-};
-
-
 export class Particle extends GameObject {
 
 
     private timer : number = 0.0;
-    private interpolatedTimer : number = 0.0;
 
-    private type : ParticleType = ParticleType.Star;
     private size : number = 0;
+    private color : string = "#ffffff";
 
 
     constructor() {
@@ -38,38 +29,29 @@ export class Particle extends GameObject {
 
     public spawn(x : number, y : number, 
         speedx : number, speedy : number, 
-        type = ParticleType.Star) : void {
+        color = "#ffffff") : void {
 
         const BASE_GRAVITY = 8.0;
         const BLOOD_MIN_SIZE = 1.0;
         const BLOOD_MAX_SIZE = 4.0;
 
         this.pos = new Vector(x, y);
-        this.renderPos = this.pos.clone();
+        this.pos = this.pos.clone();
 
         this.speed = new Vector(speedx, speedy);
         this.target = new Vector(speedx, BASE_GRAVITY);
 
         this.timer = 0.0;
-        this.interpolatedTimer = 0.0;
+        this.timer = 0.0;
 
-        this.type = type;
-        if (type == ParticleType.Blood) {
-
-            this.size = BLOOD_MIN_SIZE + ((Math.random() * (BLOOD_MAX_SIZE - BLOOD_MIN_SIZE + 1)) | 0);
-        }
-
+        this.color = color;
+        this.size = BLOOD_MIN_SIZE + ((Math.random() * (BLOOD_MAX_SIZE - BLOOD_MIN_SIZE + 1)) | 0);
+        
         this.exist = true;
     }
 
 
-    protected updateEvent(baseSpeed: number, event: CoreEvent): void {
-        
-        this.interpolatedTimer = this.timer + event.interpolationStep;
-    }
-
-
-    protected updatePhysicsEvent(baseSpeed : number, event : CoreEvent): void {
+    protected updateEvent(baseSpeed : number, event : CoreEvent): void {
         
         if ((this.timer += event.step) >= LIFETIME) {
 
@@ -89,27 +71,16 @@ export class Particle extends GameObject {
         if (!this.exist) 
             return;
 
-        let t = Math.max(0, 1.0 - this.interpolatedTimer / LIFETIME);
-        let px = Math.round(this.renderPos.x);
-        let py = Math.round(this.renderPos.y);
+        let t = Math.max(0, 1.0 - this.timer / LIFETIME);
+        let px = Math.round(this.pos.x);
+        let py = Math.round(this.pos.y);
         let diameter = (this.size + 1);
 
         canvas.setAlpha(t);
-
-        if (this.type == ParticleType.Star) {
-
-            canvas.drawBitmap(bmp,
-                px - 4, py - 4,
-                40, 8, 8, 8);
-        }
-        else {
-
-            canvas.fillColor("#aa0000");
-            canvas.fillRect(
-                px - diameter/2, py - diameter/2,
-                diameter, diameter);
-        }
-
+        canvas.fillColor(this.color);
+        canvas.fillRect(
+            px - diameter/2, py - diameter/2,
+            diameter, diameter);
         canvas.setAlpha();
     }
 }

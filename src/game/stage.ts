@@ -6,7 +6,7 @@ import { nextObject } from "./gameobject.js";
 import { Player } from "./player.js";
 import { Enemy, EnemyType } from "./enemy.js";
 import { weightedProbability } from "../common/math.js";
-import { Particle, ParticleType } from "./particle.js";
+import { Particle } from "./particle.js";
 import { Vector } from "../common/vector.js";
 
 
@@ -176,14 +176,11 @@ export class Stage {
     }
 
 
-    private spawnParticles(pos : Vector, type : ParticleType) : void {
+    private spawnParticles(pos : Vector, count : number, color : string) : void {
 
-        const COUNT = [4, 12];
-        const BASE_SPEED_MIN = [3.0, 1.0];
-        const BASE_SPEED_MAX = [3.0, 4.0];
+        const BASE_SPEED_MIN = 1.0;
+        const BASE_SPEED_MAX = 4.0;
         const SPEED_Y_BONUS = -3.0;
-
-        let count = COUNT[type as number];
 
         let angleStep = Math.PI*2 / count;
         let angleStart = angleStep/2;
@@ -192,15 +189,15 @@ export class Stage {
 
         for (let i = 0; i < count; ++ i) {
 
-            speed = BASE_SPEED_MIN[type as number] + 
-                Math.random() * (BASE_SPEED_MAX[type as number] - BASE_SPEED_MIN[type as number]);
+            speed = BASE_SPEED_MIN + 
+                Math.random() * (BASE_SPEED_MAX - BASE_SPEED_MIN);
 
             angle = angleStart + i*angleStep;
             nextObject<Particle>(this.particles, Particle)
                 .spawn(pos.x, pos.y, 
                     Math.cos(angle) * speed,
                     Math.sin(angle) * speed + SPEED_Y_BONUS,
-                    type);
+                    color);
         }
     }
 
@@ -217,48 +214,17 @@ export class Stage {
         for (let c of this.coins) {
 
             c.update(moveSpeed, event);
-        }
-
-        for (let p of this.platforms) {
-
-            p.update(moveSpeed, event);
-        }
-
-        for (let e of this.enemies) {
-
-            e.update(moveSpeed, event);
+            c.playerCollision(this.player, event);
         }
 
         this.player.update(moveSpeed, event);
 
-        this.cloudPos = (this.cloudPos + CLOUD_SPEED*event.delta) % event.screenWidth;
-    }
-
-
-    public updatePhysics(moveSpeed : number, event : CoreEvent) : void {
-
-        for (let p of this.particles) {
-
-            p.updatePhysics(moveSpeed, event);
-        }
-
-        for (let c of this.coins) {
-
-            c.updatePhysics(moveSpeed, event);
-            if (c.playerCollision(this.player, event)) {
-
-                this.spawnParticles(c.getPosition(), ParticleType.Star);
-            }
-        }
-
-        this.player.updatePhysics(moveSpeed, event);
-
         for (let e of this.enemies) {
 
-            e.updatePhysics(moveSpeed, event);
+            e.update(moveSpeed, event);
             if (e.playerCollision(this.player, moveSpeed, event)) {
 
-                this.spawnParticles(e.getPosition(), ParticleType.Blood);
+                this.spawnParticles(e.getPosition(), 12, "#aa0000");
             }
         }
 
@@ -266,11 +232,13 @@ export class Stage {
 
             p.objectCollision(this.player, moveSpeed, event);
             
-            if (p.updatePhysics(moveSpeed, event)) {
+            if (p.update(moveSpeed, event)) {
 
                 this.spawnObjects(p, event);
             }
         }   
+
+        this.cloudPos = (this.cloudPos + CLOUD_SPEED*event.step) % event.screenWidth;
     }
 
 
@@ -281,9 +249,13 @@ export class Stage {
 
         let y = canvas.height - 120;
 
-        // Sun
-        canvas.fillColor("#ffffaa");
+        canvas.clear("#55aaff");
+
+        // Moon
+        canvas.fillColor("#aaffff");
         canvas.fillCircle(112, 64, 24);
+        canvas.fillColor("#55aaff");
+        canvas.fillCircle(112-12, 64-12, 24);
 
         // Clouds
         for (let i = 0; i < 2; ++ i) {

@@ -11,7 +11,6 @@ export class Platform {
     private tiles : number[];
     private spikes : boolean[];
     private posY : number;
-    private renderPos : number;
 
     private recreated : boolean = false;
     
@@ -21,7 +20,6 @@ export class Platform {
     constructor(startPos : number, width : number) {
 
         this.posY = startPos;
-        this.renderPos = startPos;
         this.width = width;
 
         this.tiles = new Array<number> (width);
@@ -90,13 +88,7 @@ export class Platform {
     }
 
 
-    public update(moveSpeed : number, event : CoreEvent) : void {
-
-        this.renderPos = this.posY + moveSpeed * event.interpolationStep;
-    }
-
-
-    public updatePhysics(moveSpeed : number, event : CoreEvent) : boolean {
+    public update(moveSpeed : number, event : CoreEvent) : boolean {
 
         const OFFSET = PLATFORM_OFFSET;
 
@@ -120,7 +112,7 @@ export class Platform {
 
         const BRIDGE_OFFSET = -5;
 
-        let p = Math.floor(this.renderPos);
+        let p = Math.floor(this.posY);
 
         let sx : number;
         let middle : number;

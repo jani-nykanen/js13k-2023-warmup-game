@@ -6,7 +6,7 @@ import { GameObject } from "./gameobject.js";
 import { Player } from "./player.js";
 
 
-const DEATH_TIME = 15;
+const DEATH_TIME = 12;
 
 
 export class Coin extends GameObject {
@@ -24,14 +24,10 @@ export class Coin extends GameObject {
 
 
     protected updateEvent(baseSpeed : number, event : CoreEvent) : void {
-
+        
         const ANIM_SPEED = 6;
 
-        this.spr.animate(0, 3, ANIM_SPEED, event.delta);
-    };
-
-
-    protected updatePhysicsEvent(baseSpeed : number, event : CoreEvent) : void {
+        this.spr.animate(0, 3, ANIM_SPEED, event.step);
         
         if (this.pos.y - 8 > event.screenHeight) {
 
@@ -42,14 +38,14 @@ export class Coin extends GameObject {
 
     protected die(event: CoreEvent) : boolean {
         
-        return (this.deathTimer += event.delta) >= DEATH_TIME;
+        return (this.deathTimer += event.step) >= DEATH_TIME;
     }
 
 
     public spawn(x : number, y : number) : void {
 
         this.pos = new Vector(x, y);
-        this.renderPos = this.pos.clone();
+        this.pos = this.pos.clone();
         this.spr.setFrame(0);
 
         this.dying = false;
@@ -62,6 +58,7 @@ export class Coin extends GameObject {
         const SOURCE_X = [0, 16, 24, 16];
         const SOURCE_W = [16, 8, 8, 8];
         const DEATH_RING_RADIUS = 16;
+        const DEATH_WEIGHT = 0.75;
 
         if (!this.exist)
             return;
@@ -69,11 +66,11 @@ export class Coin extends GameObject {
         let t : number;
         if (this.dying) {
 
-            t = this.deathTimer / DEATH_TIME;
+            t = (1.0 - DEATH_WEIGHT) + this.deathTimer / DEATH_TIME * DEATH_WEIGHT;
 
             canvas.setAlpha();
-            canvas.fillColor("#ffff55");
-            canvas.fillRing(this.renderPos.x, this.renderPos.y, 
+            canvas.fillColor("#ffff00");
+            canvas.fillRing(this.pos.x, this.pos.y, 
                 t*t*DEATH_RING_RADIUS, t*DEATH_RING_RADIUS);    
 
             return;
@@ -83,8 +80,8 @@ export class Coin extends GameObject {
         let sx = SOURCE_X[frame];
         let sw = SOURCE_W[frame];
 
-        let px = Math.round(this.renderPos.x) - sw/2;
-        let py = Math.round(this.renderPos.y) - 8;
+        let px = Math.round(this.pos.x) - sw/2;
+        let py = Math.round(this.pos.y) - 8;
 
         canvas.setFlag("flip", frame == 3 ? Flip.Horizontal : Flip.None);
         canvas.drawBitmap(bmp, px, py, sx, 16, sw, 16);

@@ -6,9 +6,6 @@ import { ActionMap, Input } from "./input.js";
 export class CoreEvent {
 
 
-    private frameStep : number;
-    private frameDelta : number = 1.0;
-    private frameInterpolation : number = 0.0;
 
     // Bitmaps are stored here since they are created here
     private bitmaps : Map<string, Bitmap>;
@@ -19,23 +16,8 @@ export class CoreEvent {
 
     public readonly input : Input;
 
-
-    public get step() : number {
-
-        return this.frameStep;
-    }
-
-
-    public get delta() : number {
-
-        return this.frameDelta;
-    }
-
-
-    public get interpolationStep() : number {
-
-        return this.frameInterpolation;
-    }
+    // TODO: Rename this to "tick" or something?
+    public readonly step = 1.0;
 
 
     public get screenWidth() : number {
@@ -50,11 +32,9 @@ export class CoreEvent {
     }
 
 
-    constructor(physicsStep : number, actions : ActionMap, canvas : Canvas) {
+    constructor(actions : ActionMap, canvas : Canvas) {
 
         this.input = new Input(actions);
-
-        this.frameStep  = physicsStep;
 
         this.bitmaps = new Map<string, Bitmap> ();
         canvas.setFetchBitmapCallback((name : string) => {
@@ -63,18 +43,6 @@ export class CoreEvent {
         });
 
         this.canvas = canvas;
-    }
-
-
-    public setDelta(time : number) : void {
-
-        this.frameDelta = time;
-    }
-
-
-    public setInterpolationStep(value : number) : void {
-
-        this.frameInterpolation = value;
     }
 
 

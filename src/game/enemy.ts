@@ -2,7 +2,6 @@ import { Vector } from "../common/vector.js";
 import { CoreEvent } from "../core/event.js";
 import { Bitmap } from "../renderer/bitmap.js";
 import { Canvas, Flip } from "../renderer/canvas.js";
-import { rgb } from "../renderer/color.js";
 import { GameObject } from "./gameobject.js";
 import { Platform } from "./platform.js";
 import { Player } from "./player.js";
@@ -21,6 +20,8 @@ export const enum EnemyType {
 
 export class Enemy extends GameObject {
 
+
+    private yoffset : number = 0;
 
     private enemyType : EnemyType;
     private flip : Flip = Flip.None;
@@ -53,7 +54,7 @@ export class Enemy extends GameObject {
     }
 
 
-    protected updateEvent(baseSpeed : number, event : CoreEvent) : void {
+    private animate(baseSpeed : number, event : CoreEvent) : void {
 
         const ANIM_BASE_SPEED = [0, 6, 10, 0, 0];
         const WAVE_SPEED = Math.PI*2 / 60;
@@ -64,12 +65,12 @@ export class Enemy extends GameObject {
 
         case EnemyType.FlyingEnemy:
 
-            this.specialTimer = (this.specialTimer + WAVE_SPEED * event.delta) % (Math.PI*2); 
-            this.renderOffset.y = Math.round(Math.sin(this.specialTimer) * WAVE_AMPLITUDE);
+            this.specialTimer = (this.specialTimer + WAVE_SPEED * event.step) % (Math.PI*2); 
+            this.yoffset = Math.round(Math.sin(this.specialTimer) * WAVE_AMPLITUDE);
 
         case EnemyType.MovingGroundEnemy:
 
-            this.spr.animate(0, 1, (ANIM_BASE_SPEED[this.enemyType as number] - baseSpeed*2) | 0, event.delta);
+            this.spr.animate(0, 1, (ANIM_BASE_SPEED[this.enemyType as number] - baseSpeed*2) | 0, event.step);
             break;
 
         case EnemyType.JumpingGroundEnemy:
@@ -85,20 +86,11 @@ export class Enemy extends GameObject {
         default:
             break;
         }
-
-        // TODO: Probably not necessary as there was a bug
-        // in the GameObject update where the position was
-        // interpolated wrong
-        let maxY = this.attachedPlatform?.getPosition();
-        if (this.renderPos.y+8 > maxY) {
-
-            this.renderPos.y = maxY - 8;
-        }
-    };
+    }
 
 
-    protected updatePhysicsEvent(baseSpeed : number, event : CoreEvent) : void {
-        
+    private updateLogic(baseSpeed : number, event : CoreEvent) : void {
+
         const SPEED_MOD = [0.0, 0.5, 0.33, 0.0, 0.0];
         const JUMP_WAIT = 30;
         const JUMP_HEIGHT = -2.5;
@@ -107,12 +99,6 @@ export class Enemy extends GameObject {
         const MARGIN = 16;
 
         let p = this.attachedPlatform?.getPosition() - 8;
-
-        if (this.pos.y - 8 > event.screenHeight) {
-
-            this.exist = false;
-            return;
-        }
 
         switch (this.enemyType) {
 
@@ -177,14 +163,26 @@ export class Enemy extends GameObject {
     }
 
 
+    protected updateEvent(baseSpeed : number, event : CoreEvent) : void {
+        
+        if (this.pos.y - 8 > event.screenHeight) {
+
+            this.exist = false;
+            return;
+        }
+
+        this.updateLogic(baseSpeed, event);
+        this.animate(baseSpeed, event);
+    }
+
+
     public spawn(x : number, platform : Platform, type : EnemyType,
         leftBorder = x, rightBorder = x) : void {
 
         const OFFSET = [0, -8, -PLATFORM_OFFSET/2 + 8, -8, 0];
 
         this.pos = new Vector(x, platform.getPosition() + OFFSET[type as number]);
-        this.renderPos = this.pos.clone();
-        this.renderOffset.zero();
+        this.yoffset = 0.0; 
         this.speed.zero();
         this.target.zero();
         this.spr.setFrame(0);
@@ -203,10 +201,6 @@ export class Enemy extends GameObject {
             this.dir = Math.random() < 0.5 ? -1 : 1;
             this.flip = this.dir == 1 ? Flip.Horizontal : Flip.None;
         }
-        else {
-
-            this.pos.y += 1;
-        }
 
         this.exist = true;
         this.dying = false;
@@ -222,8 +216,8 @@ export class Enemy extends GameObject {
         let sx : number;
         let sy : number;
 
-        let px = Math.round(this.renderPos.x) - 8;
-        let py = Math.round(this.renderPos.y) - 8;
+        let px = Math.round(this.pos.x) - 8;
+        let py = Math.round(this.pos.y) - 8 + this.yoffset;
 
         let flip = this.flip;
         let stepy = 0;
@@ -255,7 +249,7 @@ export class Enemy extends GameObject {
     
             case EnemyType.JumpingGroundEnemy:
 
-                canvas.fillColor(rgb(0, 0, 0));
+                canvas.fillColor("#000000");
 
                 // Body
                 canvas.drawBitmap(bmp, px, py+2, 32, 64, 16, 16);

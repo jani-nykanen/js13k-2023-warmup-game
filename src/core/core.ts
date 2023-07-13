@@ -1,5 +1,4 @@
 import { Canvas } from "../renderer/canvas.js";
-import { rgb } from "../renderer/color.js";
 import { CoreEvent } from "./event.js";
 import { ActionMap } from "./input.js";
 import { Program } from "./program.js";
@@ -18,11 +17,10 @@ export class Core {
     private initialized : boolean = false;
 
 
-    constructor(canvasWidth : number, canvasHeight : number, 
-        physicsStep : number, actions : ActionMap) {
+    constructor(canvasWidth : number, canvasHeight : number, actions : ActionMap) {
 
         this.canvas = new Canvas(canvasWidth, canvasHeight);
-        this.event = new CoreEvent(physicsStep, actions, this.canvas);
+        this.event = new CoreEvent(actions, this.canvas);
     }
 
 
@@ -31,15 +29,11 @@ export class Core {
         const MAX_REFRESH_COUNT = 5; // Needed in the case that window gets deactivated and reactivated much later
         const FRAME_TIME = 16.66667;
 
-        const delta = Math.min(ts - this.oldTime, FRAME_TIME * MAX_REFRESH_COUNT);
-        const loaded = this.event.hasLoaded();
-
-        this.event.setDelta(delta / FRAME_TIME);
+        let delta = Math.min(ts - this.oldTime, FRAME_TIME * MAX_REFRESH_COUNT);
+        let loaded = this.event.hasLoaded();
 
         this.timeSum += delta;
         this.oldTime = ts;
-
-        this.event.setInterpolationStep((this.timeSum % FRAME_TIME) / FRAME_TIME);
 
         if (loaded && !this.initialized) {
 
@@ -47,15 +41,20 @@ export class Core {
             this.initialized = true;
         }
 
-        if (loaded) 
-            this.mainProgram?.update(this.event);
-
+        let firstFrame = true;
         for (; this.timeSum >= FRAME_TIME; this.timeSum -= FRAME_TIME) {
 
-            if (loaded) 
-                this.mainProgram?.updatePhysics(this.event);
+            if (loaded) {
+
+                this.mainProgram?.update(this.event);
+            }
+
+            if (firstFrame) {
+
+                this.event.input.update();
+                firstFrame = false;
+            }
         }
-        this.event.input.update();
         
         if (loaded) {
             
@@ -64,7 +63,7 @@ export class Core {
         else {
 
             // TODO: Loading text?
-            this.canvas.clear(rgb(0, 85, 170));
+            this.canvas.clear("rgb(0, 85, 170)");
         }
 
         window.requestAnimationFrame(ts => this.loop(ts));

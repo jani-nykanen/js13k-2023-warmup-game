@@ -137,7 +137,7 @@ export class Player extends GameObject {
 
             if (!this.doubleJump && this.speed.y < DOUBLE_JUMP_ANIM_TRIGGER) {
 
-                this.spr.animate(6, 9, DOUBLE_JUMP_ANIM_SPEED, event.delta);
+                this.spr.animate(6, 9, DOUBLE_JUMP_ANIM_SPEED, event.step);
                 return;
             }
 
@@ -153,20 +153,13 @@ export class Player extends GameObject {
         else {
 
             animSpeed = 10 - sx*4
-            this.spr.animate(1, 4, animSpeed, event.delta);
+            this.spr.animate(1, 4, animSpeed, event.step);
         }
     }
 
 
-    protected updateEvent(baseSpeed : number, event : CoreEvent) : void {
+    private updateTimers(baseSpeed : number, event : CoreEvent) : void {
 
-        this.control(event);
-        this.animate(event);
-    };
-
-
-    protected updatePhysicsEvent(baseSpeed : number, event : CoreEvent) : void {
-        
         const JUMP_SPEED = 2.0;
 
         if (this.jumpTimer > 0) {
@@ -193,6 +186,15 @@ export class Player extends GameObject {
 
             this.ledgeTimer -= event.step;
         }
+    }
+
+
+    protected updateEvent(baseSpeed : number, event : CoreEvent) : void {
+        
+        this.control(event);
+        this.updateTimers(baseSpeed, event);
+        this.animate(event);
+
 
         if (this.pos.x < 0)
             this.pos.x += event.screenWidth;
@@ -240,8 +242,8 @@ export class Player extends GameObject {
             return;
 
         let frame = this.spr.getFrame();
-        let px = Math.round(this.renderPos.x) - 8 + shiftx;
-        let py = Math.round(this.renderPos.y) - 8 + 1 + shifty;
+        let px = Math.round(this.pos.x) - 8 + shiftx;
+        let py = Math.round(this.pos.y) - 8 + 2 + shifty;
         let rot : number;
 
         canvas.setFlag("flip", this.flip);
@@ -277,9 +279,9 @@ export class Player extends GameObject {
 
     public draw(canvas : Canvas, bmp : Bitmap) : void {
 
-        if (this.renderPos.x < 8)
+        if (this.pos.x < 8)
             this.drawBase(canvas, bmp, canvas.width);
-        else if (this.renderPos.x >= canvas.width-8)
+        else if (this.pos.x >= canvas.width-8)
             this.drawBase(canvas, bmp, -canvas.width);
 
         this.drawBase(canvas, bmp);

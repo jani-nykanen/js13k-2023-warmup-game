@@ -1,7 +1,6 @@
 import { CoreEvent } from "../core/event.js";
 import { Program } from "../core/program.js";
-import { Canvas, Flip, TextAlign } from "../renderer/canvas.js";
-import { rgb, rgba } from "../renderer/color.js";
+import { Canvas, TextAlign } from "../renderer/canvas.js";
 import { loadAndProcessBitmaps } from "./assets.js"
 import { Stage } from "./stage.js";
 
@@ -58,15 +57,7 @@ export class Game implements Program {
     }
 
 
-    public updatePhysics(event : CoreEvent) : void {
-
-        this.stage.updatePhysics(MOVE_SPEED, event);
-    }
-
-
     public redraw(canvas : Canvas) : void {
-
-        canvas.clear(rgb(85, 170, 255));
 
         this.stage.drawBackground(canvas);
         this.stage.draw(canvas);
