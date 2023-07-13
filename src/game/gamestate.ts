@@ -43,4 +43,11 @@ export class GameState {
 
 
     public getScore = () : number => this.score;
+
+
+    public reset() : void {
+
+        this.score = 0;
+        this.bonus = 0;
+    }
 }

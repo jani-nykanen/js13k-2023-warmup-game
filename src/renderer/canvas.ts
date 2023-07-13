@@ -1,3 +1,4 @@
+import { Vector } from "../common/vector.js";
 import { Bitmap } from "./bitmap.js";
 
 
@@ -62,6 +63,8 @@ export class Canvas {
     private flipFlag : Flip = Flip.None;
     private rotationFlag : Rotation = 0;
 
+    private translation : Vector;
+
     private activeColor : string = "ffffffff";
 
     private fetchBitmapCallback : ((name : string) => Bitmap) | undefined = undefined;
@@ -77,6 +80,8 @@ export class Canvas {
 
         [this.canvas, this.ctx] = createCanvasElement(width, height);
         this.ctx.imageSmoothingEnabled = false;
+
+        this.translation = new Vector();
 
         window.addEventListener("resize", () => {
 
@@ -126,6 +131,9 @@ export class Canvas {
 
         let c = this.ctx;
 
+        x += this.translation.x;
+        y += this.translation.y;
+
         c.fillRect(x | 0, y | 0, w | 0, h | 0);
     }
 
@@ -136,6 +144,9 @@ export class Canvas {
 
         let r : number;
         let ny : number;
+
+        cx += this.translation.x;
+        cy += this.translation.y;
 
         cx |= 0;
         cy |= 0;
@@ -165,6 +176,9 @@ export class Canvas {
 
         if (innerRadius >= outerRadius)
             return;
+
+        cx += this.translation.x;
+        cy += this.translation.y;
 
         cx |= 0;
         cy |= 0;
@@ -206,6 +220,9 @@ export class Canvas {
 
         if (bmp == undefined)
             return;
+
+        dx += this.translation.x;
+        dy += this.translation.y;
 
         sx |= 0;
         sy |= 0;
@@ -297,6 +314,7 @@ export class Canvas {
     public getBitmap = (name : string) : Bitmap | undefined => this.fetchBitmapCallback(name);
 
 
+    // TODO: It would be better to split this to two different functions
     public setFlag(flag : "flip" | "rotation", value : Flip | Rotation) : void {
 
         switch (flag) {
@@ -327,4 +345,17 @@ export class Canvas {
         this.ctx.globalAlpha = alpha;
     }
     
+
+    public moveTo(x = 0, y = 0) : void {
+
+        this.translation.x = x;
+        this.translation.y = y;
+    }
+
+
+    public move(x : number, y : number) : void {
+
+        this.translation.x += x;
+        this.translation.y += y;
+    }
 }

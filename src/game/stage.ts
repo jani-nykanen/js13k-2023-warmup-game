@@ -11,6 +11,9 @@ import { Vector } from "../common/vector.js";
 import { GameState } from "./gamestate.js";
 
 
+const INITIAL_PLATFORM_INDEX = 2;
+
+
 export const PLATFORM_OFFSET = 48;
 
 
@@ -29,8 +32,6 @@ export class Stage {
 
 
     constructor(event : CoreEvent) {
-
-        const INITIAL_PLATFORM_INDEX = 2;
 
         this.platforms = new Array<Platform> ();
         for (let y = 0; y < 6; ++ y) {
@@ -221,7 +222,7 @@ export class Stage {
 
 
     public update(gameTimer : number, moveSpeed : number, 
-        state : GameState, event : CoreEvent) : void {
+        state : GameState, event : CoreEvent) : boolean {
 
         const CLOUD_SPEED = 0.125;
 
@@ -238,8 +239,6 @@ export class Stage {
                 state.addBonus(1);
             }
         }
-
-        this.player.update(moveSpeed, event);
 
         for (let e of this.enemies) {
 
@@ -263,8 +262,11 @@ export class Stage {
                 this.spawnObjects(gameTimer, p, event);
             }
         }   
+        this.player.update(moveSpeed, event);
 
         this.cloudPos = (this.cloudPos + CLOUD_SPEED*event.step) % event.screenWidth;
+
+        return !this.player.doesExist();
     }
 
 
@@ -329,4 +331,39 @@ export class Stage {
 
         this.player.draw(canvas, bmp1);
     }
+
+
+    public reset(event : CoreEvent) : void {
+
+        for (let y = 0; y < 6; ++ y) {
+
+            this.platforms[y] = new Platform(y*PLATFORM_OFFSET, 
+                (event.screenWidth/16) | 0, 
+                y == INITIAL_PLATFORM_INDEX,
+                y > INITIAL_PLATFORM_INDEX);
+        }
+
+        for (let c of this.coins) {
+            
+            c.forceDead();
+        }
+        for (let e of this.enemies) {
+
+            e.forceDead();
+        }
+        for (let p of this.particles) {
+
+            p.forceDead();
+        }
+
+        this.player.respawn(event.screenWidth/2, PLATFORM_OFFSET*2-8);
+
+        this.coinPositions.fill(false);
+        this.enemies = new Array<Enemy> ();
+    
+        this.player = new Player(event.screenWidth/2, PLATFORM_OFFSET*2-8);
+    }
+
+
+    public isPlayerDead = () : boolean => this.player.isDying();
 }

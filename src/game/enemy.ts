@@ -43,6 +43,7 @@ export class Enemy extends GameObject {
         super(0, 0, false);
 
         this.friction.y = 0.10;
+        this.hitbox = new Vector(8, 8);
     }
 
 
@@ -104,8 +105,8 @@ export class Enemy extends GameObject {
         const GRAVITY = 4.0;
         // TODO: Tempoprary (but a permanent typo, it seems)
         const MARGIN = 16;
-        const BULLET_TARGET_SPEED = 12.0;
-        const BULLET_FRICTION_MOD = 0.025;
+        const BULLET_TARGET_SPEED = 10.0;
+        const BULLET_FRICTION_MOD = 0.015;
 
         let p = this.attachedPlatform?.getPosition() - 8;
 
@@ -365,7 +366,7 @@ export class Enemy extends GameObject {
         // TODO: Kill player
         if (player.doesOverlay(this)) {
 
-            // ...
+            player.kill(this.pos.x, event);
         }
         return false;
     }

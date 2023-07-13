@@ -3,7 +3,10 @@ import { Vector } from "../common/vector.js";
 import { CoreEvent } from "../core/event.js";
 import { Canvas, Flip, Rotation } from "../renderer/canvas.js";
 import { Bitmap } from "../renderer/bitmap.js";
-import { Input, InputState } from "../core/input.js";
+import { InputState } from "../core/input.js";
+
+
+const INITIAL_FRICTION = 0.15;
 
 
 export class Player extends GameObject {
@@ -25,7 +28,7 @@ export class Player extends GameObject {
 
         super(x, y, true);
     
-        this.friction = new Vector(0.15, 0.15);
+        this.friction = new Vector(INITIAL_FRICTION, 0.15);
         this.hitbox = new Vector(8, 12);
         this.center.y = 2;
     }
@@ -231,6 +234,16 @@ export class Player extends GameObject {
     };
 
 
+    protected die(event : CoreEvent) : boolean {
+
+        const ANIM_SPEED = 6;
+
+        this.spr.animate(0, 3, ANIM_SPEED, event.step);
+        
+        return this.pos.y >= event.screenHeight+8;
+    }
+
+
     private drawBase(canvas : Canvas, bmp : Bitmap, shiftx = 0, shifty = 0) : void {
 
         const SOURCE_TOP_X = [32, 0, 0, 0, 0, 0];
@@ -243,10 +256,17 @@ export class Player extends GameObject {
 
         let frame = this.spr.getFrame();
         let px = Math.round(this.pos.x) - 8 + shiftx;
-        let py = Math.round(this.pos.y) - 8 + 2 + shifty;
+        let py = Math.round(this.pos.y) - 8 + 1 + shifty;
         let rot : number;
-
         canvas.setFlag("flip", this.flip);
+
+        if (this.dying) {
+
+            canvas.setFlag("rotation", this.spr.getFrame() as Rotation);
+            canvas.drawBitmap(bmp, px, py, 32, 16, 16, 16);
+            canvas.resetFlags();
+            return;
+        }
 
         if (frame >= 6) {
 
@@ -285,5 +305,48 @@ export class Player extends GameObject {
             this.drawBase(canvas, bmp, -canvas.width);
 
         this.drawBase(canvas, bmp);
+    }
+
+
+    public kill(x : number, event : CoreEvent) : void {
+
+        const SPEED_FACTOR = 0.25;
+        const JUMP = -4.0;
+
+        this.dying = true;
+        this.spr.setFrame(0);
+
+        this.speed.x = (this.pos.x - x) * SPEED_FACTOR;
+        this.speed.y = JUMP;
+        this.target.x = 0.0;
+
+        // TODO: Remember to reset this
+        this.friction.x = 0.025;
+    }
+
+
+    public respawn(x : number, y : number) : void {
+
+        this.flip = Flip.None;
+        this.dir = 0;
+
+        this.ledgeTimer = 0;
+        this.canJump = false;
+        this.jumpTimer = 0;
+        this.doubleJump = false;
+        this.stomped = false;
+        this.fastDropping = false;
+        this.stompBonusTimer = 0;
+
+        this.pos = new Vector(x, y);
+        this.speed = new Vector();
+        this.target = new Vector();
+
+        this.exist = true;
+        this.dying = false;
+
+        this.spr.setFrame(0);
+
+        this.friction.x = INITIAL_FRICTION;
     }
 }

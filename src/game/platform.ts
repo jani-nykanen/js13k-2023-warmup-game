@@ -5,6 +5,7 @@ import { GameObject } from "./gameobject.js";
 import { PLATFORM_OFFSET } from "./stage.js";
 import { negMod } from "../common/math.js";
 import { Player } from "./player.js";
+import { Vector } from "../common/vector.js";
 
 export class Platform {
 
@@ -187,11 +188,29 @@ export class Platform {
 
     public playerCollision(o : Player, moveSpeed : number, event : CoreEvent) : boolean {
 
+        const SPIKE_WIDTH = 8;
+        const SPIKE_HEIGHT = 4;
+
+        if (o.isDying() || !o.doesExist())
+            return;
+
+        let p : Vector;
+        let hbox = new Vector(SPIKE_WIDTH, SPIKE_HEIGHT);
+        let zero = new Vector();
+
         for (let x = 0; x < this.width; ++ x) {
 
             if (this.tiles[x] == 0)
                 continue;
 
+            if (this.spikes[x]) {
+
+                p = new Vector(x*16 + 8 - SPIKE_WIDTH/2, this.posY - SPIKE_HEIGHT/2);
+                if (o.doesOverlayRect(p, zero, hbox)) {
+
+                    o.kill(x*16 + 8, event);
+                }
+            }
             o.floorCollision(x*16, this.posY, 16, moveSpeed, event);
         }
 

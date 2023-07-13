@@ -3,6 +3,7 @@ import { Sprite } from "../renderer/sprite.js";
 import { CoreEvent } from "../core/event.js";
 import { Bitmap } from "../renderer/bitmap.js";
 import { Canvas } from "../renderer/canvas.js";
+import { updateSpeedAxis } from "./utility.js";
 
 
 export class GameObject {
@@ -57,16 +58,6 @@ export class GameObject {
     }
 
 
-    private updateSpeedAxis(speed : number, target : number, step : number) : number {
-
-        if (speed < target) {
-
-            return Math.min(target, speed + step);
-        }
-        return Math.max(target, speed - step);
-    }
-
-
     protected updateEvent(baseSpeed : number, event : CoreEvent) : void {};
 
     protected die(event : CoreEvent) : boolean { return true; }
@@ -86,10 +77,10 @@ export class GameObject {
             this.exist = false;
         }
         
-        this.speed.x = this.updateSpeedAxis(
+        this.speed.x = updateSpeedAxis(
             this.speed.x, this.target.x, 
             this.friction.x*event.step);
-        this.speed.y = this.updateSpeedAxis(
+        this.speed.y = updateSpeedAxis(
             this.speed.y, this.target.y, 
             this.friction.y*event.step);
 
@@ -108,6 +99,9 @@ export class GameObject {
         moveSpeed : number, event : CoreEvent, special = false, speedCheckLimit = 0.0) : boolean {
 
         const MARGIN = 2;
+
+        if (this.dying || !this.exist)
+            return false;
 
         let py1 = this.pos.y + this.center.y + this.hitbox.y/2;
         let py2 = py1 + (this.speed.y + moveSpeed) * event.step;
@@ -133,18 +127,25 @@ export class GameObject {
     public isDying = () : boolean => this.dying;
 
 
-    public doesOverlayRect= (o : GameObject, pos : Vector, center : Vector, hitbox : Vector) : boolean => 
-        this.exist && o.exist &&
+    public doesOverlayRect= (pos : Vector, center : Vector, hitbox : Vector) : boolean => 
+        this.exist &&
         this.pos.x + this.center.x + this.hitbox.x/2 >= pos.x + center.x - hitbox.x/2 &&
         this.pos.x + this.center.x - this.hitbox.x/2 <= pos.x + center.x + hitbox.x/2 &&
         this.pos.y + this.center.y + this.hitbox.y/2 >= pos.y + center.y - hitbox.y/2 &&
         this.pos.y + this.center.y - this.hitbox.y/2 <= pos.y + center.y + hitbox.y/2;
 
 
-    public doesOverlay = (o : GameObject) : boolean => this.doesOverlayRect(o, o.pos, o.center, o.hitbox);
+    public doesOverlay = (o : GameObject) : boolean => this.doesOverlayRect(o.pos, o.center, o.hitbox);
 
 
     public getPosition = () : Vector => this.pos.clone();
+
+
+    public forceDead() : void {
+
+        this.dying = false;
+        this.exist = false;
+    }
 }
 
 
