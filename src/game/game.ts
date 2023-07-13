@@ -3,12 +3,14 @@ import { Program } from "../core/program.js";
 import { Canvas, TextAlign } from "../renderer/canvas.js";
 import { loadAndProcessBitmaps } from "./assets.js"
 import { Stage } from "./stage.js";
+import { GameState } from "./gamestate.js";
 
 
 export class Game implements Program {
 
 
     private stage : Stage;
+    private state : GameState;
 
     private moveSpeed : number = 0.0;
     private gameTimer : number = 0.0;
@@ -20,6 +22,7 @@ export class Game implements Program {
 
         // Need to initialize things here to avoid some warnings by Closure compiler...
         this.stage = new Stage(event);
+        this.state = new GameState();
     }
 
 
@@ -57,11 +60,11 @@ export class Game implements Program {
         
         dx = canvas.width/4;
         canvas.drawBitmap(bmp1, dx - 10, 1, 0, 80, 20, 8);
-        canvas.drawText(font, "000000", dx, 8, -1, 0, TextAlign.Center);
+        canvas.drawText(font, this.state.scoreToString(6), dx, 8, -1, 0, TextAlign.Center);
 
         dx += canvas.width/2;
         canvas.drawBitmap(bmp1, dx - 10, 1, 24, 80, 21, 8);
-        canvas.drawText(font, "#1.0", dx-4, 8, -2, 0, TextAlign.Center);
+        canvas.drawText(font, this.state.bonusToString(), dx-4, 8, -2, 0, TextAlign.Center);
     }
 
 
@@ -76,7 +79,7 @@ export class Game implements Program {
         this.gameTimer += event.step;
         this.computeMoveSpeed();
 
-        this.stage.update(this.gameTimer, this.moveSpeed, event);
+        this.stage.update(this.gameTimer, this.moveSpeed, this.state, event);
     }
 
 

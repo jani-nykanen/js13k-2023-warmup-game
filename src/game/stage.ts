@@ -8,6 +8,7 @@ import { Enemy, EnemyType } from "./enemy.js";
 import { weightedProbability, weightedProbabilityInterpolate } from "../common/math.js";
 import { Particle } from "./particle.js";
 import { Vector } from "../common/vector.js";
+import { GameState } from "./gamestate.js";
 
 
 export const PLATFORM_OFFSET = 48;
@@ -36,7 +37,8 @@ export class Stage {
 
             this.platforms[y] = new Platform(y*PLATFORM_OFFSET, 
                 (event.screenWidth/16) | 0, 
-                y == INITIAL_PLATFORM_INDEX);
+                y == INITIAL_PLATFORM_INDEX,
+                y > INITIAL_PLATFORM_INDEX);
         }
         
         this.coins = new Array<Coin> ();
@@ -218,7 +220,8 @@ export class Stage {
     }
 
 
-    public update(gameTimer : number, moveSpeed : number, event : CoreEvent) : void {
+    public update(gameTimer : number, moveSpeed : number, 
+        state : GameState, event : CoreEvent) : void {
 
         const CLOUD_SPEED = 0.125;
 
@@ -230,7 +233,10 @@ export class Stage {
         for (let c of this.coins) {
 
             c.update(moveSpeed, event);
-            c.playerCollision(this.player, event);
+            if (c.playerCollision(this.player, event)) {
+
+                state.addBonus(1);
+            }
         }
 
         this.player.update(moveSpeed, event);
@@ -241,12 +247,17 @@ export class Stage {
             if (e.playerCollision(this.player, moveSpeed, event)) {
 
                 this.spawnParticles(e.getPosition(), 12, "#aa0000");
+                state.addBonus(1);
             }
         }
 
         for (let p of this.platforms) {
 
-            p.objectCollision(this.player, moveSpeed, event);
+            if (p.playerCollision(this.player, moveSpeed, event)) {
+
+                state.addPoints(10);
+            }
+
             if (p.update(moveSpeed, event)) {
 
                 this.spawnObjects(gameTimer, p, event);

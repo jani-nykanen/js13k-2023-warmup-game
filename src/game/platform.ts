@@ -4,6 +4,7 @@ import { Canvas, Flip } from "../renderer/canvas.js";
 import { GameObject } from "./gameobject.js";
 import { PLATFORM_OFFSET } from "./stage.js";
 import { negMod } from "../common/math.js";
+import { Player } from "./player.js";
 
 export class Platform {
 
@@ -12,12 +13,13 @@ export class Platform {
     private spikes : boolean[];
     private posY : number;
 
+    private scored : boolean = false;
     private recreated : boolean = false;
     
     public readonly width : number;
 
 
-    constructor(startPos : number, width : number, initial = false) {
+    constructor(startPos : number, width : number, initial = false, empty = false) {
 
         this.posY = startPos;
         this.width = width;
@@ -25,7 +27,16 @@ export class Platform {
         this.tiles = new Array<number> (width);
         this.spikes = new Array<boolean> (width);
 
-        this.computeTiles(initial);
+        if (empty) {
+
+            this.tiles.fill(0);
+        }
+        else {
+
+            this.computeTiles(initial);
+        }
+
+        this.scored = initial || empty;
     }
 
 
@@ -105,6 +116,7 @@ export class Platform {
             this.computeTiles();
 
             this.recreated = true;
+            this.scored = false;
 
             return true;
         }
@@ -173,18 +185,22 @@ export class Platform {
     }
 
 
-    public objectCollision(o : GameObject, moveSpeed : number, event : CoreEvent) : boolean {
-
-        let ret = false;
+    public playerCollision(o : Player, moveSpeed : number, event : CoreEvent) : boolean {
 
         for (let x = 0; x < this.width; ++ x) {
 
             if (this.tiles[x] == 0)
                 continue;
 
-            ret = o.floorCollision(x*16, this.posY, 16, moveSpeed, event) || ret;
+            o.floorCollision(x*16, this.posY, 16, moveSpeed, event);
         }
-        return ret;
+
+        if (!this.scored && o.getPosition().y+8 < this.posY) {
+
+            this.scored = true;
+            return true;
+        }
+        return false;
     }
 
 

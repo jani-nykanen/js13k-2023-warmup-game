@@ -58,7 +58,7 @@ export class Enemy extends GameObject {
 
     private animate(baseSpeed : number, event : CoreEvent) : void {
 
-        const ANIM_BASE_SPEED = [0, 6, 10, 0, 0];
+        const ANIM_BASE_SPEED = [0, 6, 10, 0, 4];
         const WAVE_SPEED = Math.PI*2 / 60;
         const WAVE_AMPLITUDE = 2;
         const JUMP_FRAME_EPS = 0.5;
@@ -69,10 +69,16 @@ export class Enemy extends GameObject {
 
             this.specialTimer = (this.specialTimer + WAVE_SPEED * event.step) % (Math.PI*2); 
             this.yoffset = Math.round(Math.sin(this.specialTimer) * WAVE_AMPLITUDE);
-
+            // Fallthrough
         case EnemyType.MovingGroundEnemy:
 
             this.spr.animate(0, 1, (ANIM_BASE_SPEED[this.enemyType as number] - baseSpeed*2) | 0, event.step);
+            break;
+
+        case EnemyType.Bullet:
+
+            // No base speed modifier for this one
+            this.spr.animate(0, 1, ANIM_BASE_SPEED[4], event.step);
             break;
 
         case EnemyType.JumpingGroundEnemy:
@@ -82,7 +88,6 @@ export class Enemy extends GameObject {
 
                 this.spr.setFrame(this.speed.y > 0 ? 2 : 0);
             }
-
             break;
 
         default:
@@ -317,6 +322,11 @@ export class Enemy extends GameObject {
             case EnemyType.Bullet:
 
                 canvas.drawBitmap(bmp, px, py + 2 - 4*stepy, 16, 64, 16, 16);
+                if (frame == 1 && !this.dying) {
+
+                    canvas.drawBitmap(bmp, px+4 - this.dir*12, py + 4, 40, 8, 8, 8);
+                }
+
                 break;
 
             default:
