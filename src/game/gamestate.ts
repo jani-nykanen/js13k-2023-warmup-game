@@ -6,7 +6,22 @@ export class GameState {
 
     private score : number = 0;
     private bonus : number = 0;
+    private hiscore : number = 0;
 
+
+    constructor() {
+
+        let hiscore = 0;
+        try {
+
+            hiscore = Number(localStorage.getItem("js13kwarmup__hiscore"));
+        }
+        catch (e) {
+
+            console.log("Could not access the local storage: " + String(e));
+        }
+        this.hiscore = hiscore;
+    }
 
     
     public scoreToString(maxLength = 6) : string {
@@ -43,11 +58,29 @@ export class GameState {
 
 
     public getScore = () : number => this.score;
+    public getHiscore = () : number => this.hiscore;
 
 
     public reset() : void {
 
         this.score = 0;
         this.bonus = 0;
+    }
+
+
+    public storeHiscore() : void {
+
+        if (this.score < this.hiscore) 
+            return;
+
+        this.hiscore = this.score;
+        try {
+
+            localStorage.setItem("js13kwarmup__hiscore", String(this.hiscore));
+        }
+        catch (e) {
+
+            console.log("Could not access the local storage: " + String(e));
+        }
     }
 }

@@ -44,6 +44,8 @@ const convertTile = (imageData : ImageData,
 }
 
 
+// Unused (for now)
+/*
 const convertToRGB222 = (imageData : ImageData, len : number, alphaThreshold = 128) : void => {
 
     for (let i = 0; i < len; ++ i) {
@@ -51,6 +53,22 @@ const convertToRGB222 = (imageData : ImageData, len : number, alphaThreshold = 1
         for (let j = 0; j < 3; ++ j) {
 
             imageData.data[i*4 + j] = Math.floor(imageData.data[i*4 + j] / 85) * 85;
+        }
+        imageData.data[i*4 + 3] = imageData.data[i*4 + 3] < alphaThreshold ? 0 : 255;
+    }
+} 
+*/
+
+
+const convertToMonochrome = (imageData : ImageData, 
+    color : [number, number, number],
+    len : number, alphaThreshold = 128) : void => {
+
+    for (let i = 0; i < len; ++ i) {
+
+        for (let j = 0; j < 3; ++ j) {
+
+            imageData.data[i*4 + j] = color[j];
         }
         imageData.data[i*4 + 3] = imageData.data[i*4 + 3] < alphaThreshold ? 0 : 255;
     }
@@ -107,7 +125,8 @@ export const processFourColorBitmap = (image : HTMLImageElement,
 
 export const createCustomBitmap = (width : number, height : number, 
     cb : (c : CanvasRenderingContext2D, width : number, height : number) => void,
-    convert = false, alphaThreshold = 128) : Bitmap => {
+    monochrome = false, alphaThreshold = 128, 
+    colors : [number, number, number] = [255, 255, 255]) : Bitmap => {
 
     let canvas = document.createElement("canvas");
     let ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
@@ -118,11 +137,12 @@ export const createCustomBitmap = (width : number, height : number,
 
     cb(ctx, width, height);
 
-    if (convert) {
+    if (monochrome) {
 
         ctx.drawImage(canvas, 0, 0);
         imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        convertToRGB222(imageData, width*height, alphaThreshold);
+        convertToMonochrome(imageData, 
+            colors, width*height, alphaThreshold);
         ctx.putImageData(imageData, 0, 0);
     }
     return canvas;

@@ -4,6 +4,7 @@ import { Canvas, TextAlign } from "../renderer/canvas.js";
 import { loadAndProcessBitmaps } from "./assets.js"
 import { Stage } from "./stage.js";
 import { GameState } from "./gamestate.js";
+import { InputState } from "../core/input.js";
 
 
 export class Game implements Program {
@@ -17,6 +18,10 @@ export class Game implements Program {
     private gameTimer : number = 0.0;
 
     private shakeTimer : number = 0.0;
+    
+    private paused : boolean = false;
+    private gameover : boolean = false;
+    private gameoverTimer : number = 0;
 
 
     constructor(event : CoreEvent) {
@@ -34,7 +39,7 @@ export class Game implements Program {
         const INITIAL_SPEED_UP_TIME = 60;
         const BASE_SPEED = 0.5;
         const MAX_SPEED = 2.0;
-        const RAMP_TIME = 10*60;
+        const RAMP_TIME = 30*60;
         const RAMP_MAGNITUDE = 0.25;
         const MOVE_SPEED_DELTA = 0.01;
 
@@ -88,11 +93,56 @@ export class Game implements Program {
 
     private drawGameOver(canvas : Canvas) : void {
 
+        const HEADER_OFFSET = -32;
+        const SCORE_TEXT_OFFSET = 0;
+
         let bmpGameOver = canvas.getBitmap("gameover");
+        let font = canvas.getBitmap("font");
+
+        // If gameoverTimer is high enough:
+        canvas.clear("rgba(0, 0, 0, 0.67)");
 
         canvas.drawBitmap(bmpGameOver, 
             canvas.width/2 - bmpGameOver.width/2,
-            canvas.height/2 - bmpGameOver.height/2);
+            canvas.height/2 - bmpGameOver.height/2 + HEADER_OFFSET);
+
+        canvas.drawText(font,
+            "SCORE: " + this.state.getScore(),
+            canvas.width/2, 
+            canvas.height/2 + SCORE_TEXT_OFFSET,
+             0, 0, TextAlign.Center);
+
+        canvas.drawText(font,
+            "HISCORE: " + this.state.getHiscore(),
+            canvas.width/2, canvas.height/2 + SCORE_TEXT_OFFSET + 16, 
+            0, 0, TextAlign.Center);
+
+    }
+
+
+    private drawPause(canvas : Canvas) : void {
+
+        let font = canvas.getBitmap("font");
+
+        // If gameoverTimer is high enough:
+        canvas.clear("rgba(0, 0, 0, 0.67)");
+
+        canvas.drawText(font, "GAME PAUSED", 
+            canvas.width/2, 
+            canvas.height/2 - 4,
+            0, 0, TextAlign.Center);
+
+    }
+
+
+    private reset(event : CoreEvent) : void {
+
+        this.state.reset();
+        this.stage.reset(event);
+        this.gameTimer = 0;
+        this.moveSpeed = 0.0;
+        this.shakeTimer = 0;
+        this.gameover = false;
     }
 
 
@@ -106,36 +156,52 @@ export class Game implements Program {
 
         const DEATH_SHAKE_TIME = 30;
 
+        let startButtonPressed = event.input.getAction("start") == InputState.Pressed;
+
+        if (startButtonPressed && !this.gameover) {
+
+            this.paused = !this.paused;
+        }
+        if (this.paused) 
+            return;
+
         this.gameTimer += event.step;
         this.computeMoveSpeed(event);
+        
+        this.stage.update(this.gameTimer, this.moveSpeed, this.state, event);
 
         if (this.shakeTimer > 0) {
 
             this.shakeTimer -= event.step;
         }
 
-        let wasPlayerDead = this.stage.isPlayerDead();
+        if (this.gameover) {
 
-        if (this.stage.update(this.gameTimer, this.moveSpeed, this.state, event)) {
+            if (startButtonPressed) {
 
-            this.state.reset();
-            this.stage.reset(event);
-            this.gameTimer = 0;
-            this.moveSpeed = 0.0;
-            this.shakeTimer = 0;
+                this.reset(event);
+                
+            }
             return;
         }
 
-        if (!wasPlayerDead && this.stage.isPlayerDead()) {
+        
+        if (!this.gameover && this.stage.isPlayerDead()) {
+
+            this.state.storeHiscore();
+
+            this.gameover = true;
+            this.gameTimer = 0;
 
             this.shakeTimer = DEATH_SHAKE_TIME;
+            this.state.storeHiscore();
         }
     }
 
 
     public redraw(canvas : Canvas) : void {
 
-        const SHAKE_AMOUNT = 2;
+        const SHAKE_AMOUNT = 4;
 
         this.stage.drawBackground(canvas);
 
@@ -155,6 +221,11 @@ export class Game implements Program {
         else {
             
             this.drawHUD(canvas);
+        }
+
+        if (this.paused) {
+
+            this.drawPause(canvas);
         }
     }
 

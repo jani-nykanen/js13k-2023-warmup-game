@@ -66,9 +66,9 @@ export class CoreEvent {
     public createCustomBitmap(name : string,
         width : number, height : number, 
         cb : (c : CanvasRenderingContext2D, width : number, height : number) => void,
-        convertToRGB222 = false, alphaThreshold = 128) : void  {
+        monochrome = false, alphaThreshold = 128, colors : [number, number, number] = [255, 255, 255]) : void  {
     
-        let bmp = createCustomBitmap(width, height, cb, convertToRGB222, alphaThreshold);
+        let bmp = createCustomBitmap(width, height, cb, monochrome, alphaThreshold, colors);
         this.bitmaps.set(name, bmp);
     }
 

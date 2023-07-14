@@ -1,6 +1,6 @@
 
 
-export type InputAction = { keys : string[], gamepadButtons : number[] };
+export type InputAction = { keys : string[] };
 export type ActionMap = Map<string, InputAction>;
 
 
