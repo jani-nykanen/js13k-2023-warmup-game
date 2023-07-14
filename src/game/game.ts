@@ -95,16 +95,27 @@ export class Game implements Program {
 
         const HEADER_OFFSET = -32;
         const SCORE_TEXT_OFFSET = 0;
+        const APPEAR_TIME = 30;
 
         let bmpGameOver = canvas.getBitmap("gameover");
         let font = canvas.getBitmap("font");
 
-        // If gameoverTimer is high enough:
+        let dx =canvas.width/2 - bmpGameOver.width/2;
+        let dy = canvas.height/2 - bmpGameOver.height/2 + HEADER_OFFSET
+
+        let t : number;
+
         canvas.clear("rgba(0, 0, 0, 0.67)");
 
-        canvas.drawBitmap(bmpGameOver, 
-            canvas.width/2 - bmpGameOver.width/2,
-            canvas.height/2 - bmpGameOver.height/2 + HEADER_OFFSET);
+        if (this.gameoverTimer < APPEAR_TIME) {
+
+            t = 1.0 - this.gameoverTimer / APPEAR_TIME;
+            canvas.drawFunkyWaveEffectBitmap(bmpGameOver,
+                dx, dy, t*t, 32, 2, 16);
+            return;
+        }
+
+        canvas.drawBitmap(bmpGameOver, dx, dy);
 
         canvas.drawText(font,
             "SCORE: " + this.state.getScore(),
@@ -176,6 +187,8 @@ export class Game implements Program {
         }
 
         if (this.gameover) {
+
+            this.gameoverTimer += event.step;
 
             if (startButtonPressed) {
 

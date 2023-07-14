@@ -311,6 +311,31 @@ export class Canvas {
     }
 
 
+    public drawFunkyWaveEffectBitmap(bmp : Bitmap, 
+        dx : number, dy : number, 
+        t : number, amplitude : number, latitude : number,
+        maxOffset : number) : void {
+
+        let c = this.ctx;
+
+        let offset = 1 + maxOffset * t;
+        let xoff : number;
+        let yoff : number;
+
+        dy += bmp.height/2;
+
+        for (let y = 0; y < bmp.height; ++ y) {
+
+            xoff = Math.round(Math.sin((Math.PI*2*latitude) / bmp.height * y + t * (Math.PI*latitude)) * amplitude * t);
+            yoff = Math.round((y - bmp.height/2) * offset);
+            
+            c.drawImage(bmp, 0, y, bmp.width, 1,
+                (dx + xoff) | 0, (dy + yoff) | 0,
+                bmp.width, 1)
+        }
+    }
+
+
     public getBitmap = (name : string) : Bitmap | undefined => this.fetchBitmapCallback(name);
 
 
