@@ -86,6 +86,16 @@ export class Game implements Program {
     }
 
 
+    private drawGameOver(canvas : Canvas) : void {
+
+        let bmpGameOver = canvas.getBitmap("gameover");
+
+        canvas.drawBitmap(bmpGameOver, 
+            canvas.width/2 - bmpGameOver.width/2,
+            canvas.height/2 - bmpGameOver.height/2);
+    }
+
+
     public init(event : CoreEvent) : void {
 
         // this.stage = new Stage(event);
@@ -138,7 +148,14 @@ export class Game implements Program {
         this.stage.draw(canvas);
 
         canvas.moveTo();
-        this.drawHUD(canvas);
+        if (this.stage.isPlayerDead()) {
+
+            this.drawGameOver(canvas);
+        }
+        else {
+            
+            this.drawHUD(canvas);
+        }
     }
 
 }

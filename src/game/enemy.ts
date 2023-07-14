@@ -367,6 +367,7 @@ export class Enemy extends GameObject {
         if (player.doesOverlay(this)) {
 
             player.kill(this.pos.x, event);
+            return true;
         }
         return false;
     }

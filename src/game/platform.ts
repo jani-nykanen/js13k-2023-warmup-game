@@ -209,6 +209,7 @@ export class Platform {
                 if (o.doesOverlayRect(p, zero, hbox)) {
 
                     o.kill(x*16 + 8, event);
+                    return true;
                 }
             }
             o.floorCollision(x*16, this.posY, 16, moveSpeed, event);

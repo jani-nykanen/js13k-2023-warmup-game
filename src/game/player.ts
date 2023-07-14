@@ -204,10 +204,9 @@ export class Player extends GameObject {
         else if (this.pos.x > event.screenWidth)
             this.pos.x -= event.screenWidth;
 
-        // TEMP
         if (this.pos.y > event.screenHeight+8) {
 
-            this.pos.y -= event.screenHeight+16;
+            this.kill(this.pos.x, event);
         }
 
         this.canJump = false;
@@ -236,10 +235,12 @@ export class Player extends GameObject {
 
     protected die(event : CoreEvent) : boolean {
 
-        const ANIM_SPEED = 6;
+        const ANIM_SPEED = 4;
+        const DEATH_GRAVITY = 8.0;
 
         this.spr.animate(0, 3, ANIM_SPEED, event.step);
-        
+        this.target.y = DEATH_GRAVITY;
+
         return this.pos.y >= event.screenHeight+8;
     }
 

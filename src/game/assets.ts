@@ -58,7 +58,22 @@ const createCloudBitmap = (c : CanvasRenderingContext2D, width : number, height 
         y =  height/2 + Math.ceil(f(x / width));
         c.fillRect(x, y, 1, height-y);
     }
+}
 
+
+const createYouDieText = (c : CanvasRenderingContext2D, width : number, height : number) : void => {
+
+    const SHADOW_HEIGHT = 2;
+    const STR = "Game Over!";
+
+    c.font = "bold 18px Arial";
+    c.textAlign = "center";
+
+    for (let i = SHADOW_HEIGHT; i >= 0; -- i) {
+
+        c.fillStyle = i == 0 ? "#ff5500" : "#550000";
+        c.fillText(STR, width/2, height-2 + i);
+    }
 }
 
 
@@ -71,5 +86,7 @@ export const loadAndProcessBitmaps = (event : CoreEvent) : void => {
     event.loadFourColorBitmap("font", FONT_PATH, 0, 3, 
         (new Array<string>(16*4)).fill("0004"),
         PALETTE);
+
     event.createCustomBitmap("clouds", event.screenWidth, 80, createCloudBitmap);
+    event.createCustomBitmap("gameover", 112, 20, createYouDieText, true, 128);
 }

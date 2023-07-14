@@ -245,8 +245,15 @@ export class Stage {
             e.update(moveSpeed, event);
             if (e.playerCollision(this.player, moveSpeed, event)) {
 
-                this.spawnParticles(e.getPosition(), 12, "#aa0000");
-                state.addBonus(1);
+                if (this.player.isDying()) {
+
+                    this.spawnParticles(this.player.getPosition(), 12, "#ffffff");
+                }
+                else {
+
+                    this.spawnParticles(e.getPosition(), 12, "#aa0000");
+                    state.addBonus(1);
+                }
             }
         }
 
@@ -254,7 +261,15 @@ export class Stage {
 
             if (p.playerCollision(this.player, moveSpeed, event)) {
 
-                state.addPoints(10);
+                if (this.player.isDying()) {
+
+                    // TODO: A bit of repeating code here, add "spawnPlayerParticles" etc?
+                    this.spawnParticles(this.player.getPosition(), 12, "#ffffff");
+                }
+                else {
+
+                    state.addPoints(10);
+                }
             }
 
             if (p.update(moveSpeed, event)) {
@@ -335,6 +350,10 @@ export class Stage {
 
     public reset(event : CoreEvent) : void {
 
+        // Note: just recreating the whole "Stage" object
+        // would be faster, but memory-wise would not be 
+        // so good an idea
+
         for (let y = 0; y < 6; ++ y) {
 
             this.platforms[y] = new Platform(y*PLATFORM_OFFSET, 
@@ -355,13 +374,9 @@ export class Stage {
 
             p.forceDead();
         }
-
         this.player.respawn(event.screenWidth/2, PLATFORM_OFFSET*2-8);
 
         this.coinPositions.fill(false);
-        this.enemies = new Array<Enemy> ();
-    
-        this.player = new Player(event.screenWidth/2, PLATFORM_OFFSET*2-8);
     }
 
 
