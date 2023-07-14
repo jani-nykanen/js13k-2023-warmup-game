@@ -205,7 +205,7 @@ export class Platform {
 
             if (this.spikes[x]) {
 
-                p = new Vector(x*16 + 8 - SPIKE_WIDTH/2, this.posY - SPIKE_HEIGHT/2);
+                p = new Vector(x*16 + 8, this.posY - SPIKE_HEIGHT/2);
                 if (o.doesOverlayRect(p, zero, hbox)) {
 
                     o.kill(x*16 + 8, event);

@@ -8,6 +8,9 @@ import { InputState } from "../core/input.js";
 import { TransitionType } from "../core/transition.js";
 
 
+const GAMEOVER_TEXT_APPEAR_TIME = 30;
+
+
 export class Game implements Program {
 
 
@@ -98,7 +101,6 @@ export class Game implements Program {
 
         const HEADER_OFFSET = -32;
         const SCORE_TEXT_OFFSET = 0;
-        const APPEAR_TIME = 30;
         const CONTINUE_TEXT_OFFSET = 56;
 
         let bmpGameOver = canvas.getBitmap("gameover");
@@ -109,13 +111,13 @@ export class Game implements Program {
         let dy = canvas.height/2 - bmpGameOver.height/2 + HEADER_OFFSET
 
         let t = 1.0;
-        if (this.gameoverTimer < APPEAR_TIME) {
+        if (this.gameoverTimer < GAMEOVER_TEXT_APPEAR_TIME) {
 
-            t = this.gameoverTimer / APPEAR_TIME;
+            t = this.gameoverTimer / GAMEOVER_TEXT_APPEAR_TIME;
         }
         canvas.clear("rgba(0, 0, 0," + String(t * 0.67) + ")");
 
-        if (this.gameoverTimer < APPEAR_TIME) {
+        if (this.gameoverTimer < GAMEOVER_TEXT_APPEAR_TIME) {
             
             canvas.drawFunkyWaveEffectBitmap(bmpGameOver,
                 dx, dy, (1.0 - t)*(1.0 - t), 32, 2, 16);
@@ -208,8 +210,8 @@ export class Game implements Program {
         if (this.gameover) {
 
             this.gameoverTimer += event.step;
-
-            if (startButtonPressed) {
+            if (startButtonPressed &&
+                this.gameoverTimer >= GAMEOVER_TEXT_APPEAR_TIME) {
 
                 event.transition.activate(true, TransitionType.Fade, 1.0/30.0, 
                     (event : CoreEvent) => this.reset(event)
