@@ -84,9 +84,11 @@ export class Transition {
                 Math.hypot(canvas.width/2, canvas.height - canvas.height/2)
             );
 
+            // TODO: Use sqrt(t) or t*t instead (or even sin(t * Math.PI/2)) for a smoother
+            // transition?
             radius = (1 - t) * maxRadius;
-            // canvas.fillColor("black");
-            // canvas.fillCircleOutside(radius);
+            canvas.fillColor("black");
+            canvas.fillCircleOutside(radius);
 
             break;
 

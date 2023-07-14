@@ -3,23 +3,10 @@
 export const negMod = (m : number, n : number) : number => ((m % n) + n) % n;
 
 
-export const weightedProbability = (weights : number[]) : number => {
+export const clamp = (x : number, min : number, max : number) : number => Math.max(Math.min(x, max), min);
 
-    let p = Math.random();
-    let v = weights[0];
-    let i : number;
 
-    for (i = 0; i < weights.length; ++ i) {
-
-        if (p < v)  
-            break;
-        
-        if (i < weights.length-1)
-            v += weights[i+1];
-    }
-
-    return i;
-}
+export const weightedProbability = (weights : number[]) : number => weightedProbabilityInterpolate(weights, weights, 1.0);
 
 
 export const weightedProbabilityInterpolate = (weights1 : number[], weights2 : number[], t : number) : number => {

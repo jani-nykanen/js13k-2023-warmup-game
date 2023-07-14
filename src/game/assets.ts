@@ -1,3 +1,4 @@
+import { Ramp } from "../audio/sample.js";
 import { CoreEvent } from "../core/event.js";
 
 
@@ -73,6 +74,27 @@ const createYouDieText = (c : CanvasRenderingContext2D, width : number, height :
 }
 
 
+const createSamples = (event : CoreEvent) : void => {
+
+    event.createSample("die",
+        [[192, 4], [144, 8], [96, 16]],
+        0.70, "square", Ramp.Exponential, 0.20
+    );
+    event.createSample("jump",
+        [[96, 8], [112, 7], [160, 6], [256, 4]],
+        0.70, "sawtooth", Ramp.Exponential, 0.20
+    );
+    event.createSample("coin",
+        [[256, 3], [400, 4], [480, 5], [512, 10]],
+        0.70, "square", Ramp.Instant, 0.20
+    );
+    event.createSample("kill",
+        [[320, 4], [192, 6], [96, 10]],
+        0.70, "square", Ramp.Linear, 0.20
+    );
+}
+
+
 export const loadAndProcessBitmaps = (event : CoreEvent) : void => {
 
     const BMP_PATH = "bitmap1.png";
@@ -91,4 +113,6 @@ export const loadAndProcessBitmaps = (event : CoreEvent) : void => {
 
     event.createCustomBitmap("clouds", event.screenWidth, 80, createCloudBitmap);
     event.createCustomBitmap("gameover", 112, 20, createYouDieText, true, 192, [255, 0, 0]);
+
+    createSamples(event);
 }

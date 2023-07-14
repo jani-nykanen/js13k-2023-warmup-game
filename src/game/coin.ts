@@ -98,6 +98,9 @@ export class Coin extends GameObject {
 
             this.dying = true;
             this.deathTimer = 0.0;
+
+            event.audio.playSample(event.getSample("coin"), 0.60);
+
             return true;
         }
         return false;

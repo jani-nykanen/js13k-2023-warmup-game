@@ -27,6 +27,8 @@ export class Game implements Program {
 
     constructor(event : CoreEvent) {
 
+        event.audio.setGlobalVolume(0.60); // TODO: Move elsewhere?
+
         loadAndProcessBitmaps(event);
 
         // Need to initialize things here to avoid some warnings by Closure compiler...
@@ -173,7 +175,7 @@ export class Game implements Program {
 
     public init(event : CoreEvent) : void {
 
-        event.transition.activate(false, TransitionType.Fade, 1.0/30.0, null);
+        event.transition.activate(false, TransitionType.Circle, 1.0/30.0, null);
     }
 
 

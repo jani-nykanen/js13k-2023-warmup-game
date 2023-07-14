@@ -360,6 +360,8 @@ export class Enemy extends GameObject {
 
             this.speed.y = DEATH_START_SPEED;
 
+            event.audio.playSample(event.getSample("kill"), 0.70);
+
             return true;
         }
 

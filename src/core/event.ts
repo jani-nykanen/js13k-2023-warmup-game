@@ -2,6 +2,8 @@ import { Bitmap, createCustomBitmap, processFourColorBitmap } from "../renderer/
 import { Canvas } from "../renderer/canvas.js";
 import { ActionMap, Input } from "./input.js";
 import { Transition } from "./transition.js";
+import { AudioPlayer } from "../audio/audioplayer.js";
+import { Ramp, Sample } from "../audio/sample.js";
 
 
 export class CoreEvent {
@@ -10,6 +12,10 @@ export class CoreEvent {
 
     // Bitmaps are stored here since they are created here
     private bitmaps : Map<string, Bitmap>;
+    // ...and also samples for some reason
+    // TODO: Add a proper asset container class
+    private samples : Map<string, Sample>;
+
     private loadCount : number = 0;
     private loaded : number = 0;
 
@@ -17,6 +23,7 @@ export class CoreEvent {
 
     public readonly input : Input;
     public readonly transition : Transition;
+    public readonly audio : AudioPlayer;
 
 
     // TODO: Rename this to "tick" or something?
@@ -39,13 +46,15 @@ export class CoreEvent {
 
         this.input = new Input(actions);
         this.transition = new Transition();
+        this.audio = new AudioPlayer(0.50);
 
         this.bitmaps = new Map<string, Bitmap> ();
+        this.samples = new Map<string, Sample> ();
+
         canvas.setFetchBitmapCallback((name : string) => {
 
             return this.bitmaps.get(name);
         });
-
         this.canvas = canvas;
     }
 
@@ -75,6 +84,20 @@ export class CoreEvent {
         let bmp = createCustomBitmap(width, height, cb, monochrome, alphaThreshold, colors);
         this.bitmaps.set(name, bmp);
     }
+
+
+    public createSample(name : string,
+        sequence : number[][], baseVolume = 1.0,
+        type : OscillatorType = "square",
+        ramp : Ramp = Ramp.Exponential,
+        fadeVolumeFactor : number = 0.5) : void {
+
+        let sample = this.audio.createSample(sequence, baseVolume, type, ramp, fadeVolumeFactor);
+        this.samples.set(name, sample);
+    }
+
+
+    public getSample = (name : string) : Sample | undefined => this.samples.get(name);
 
     
     public hasLoaded = () : boolean => this.loaded >= this.loadCount;

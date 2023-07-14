@@ -42,6 +42,7 @@ export class Player extends GameObject {
         const DOUBLE_JUMP_TIME = 12;
         const STOMP_JUMP_BONUS = 8;
         const FAST_DROP_SPEED = 4.0;
+        const JUMP_VOLUME = 0.70;
 
         let dir = 0;
         if ((event.input.getAction("right") & InputState.DownOrPressed) != 0) {
@@ -62,6 +63,8 @@ export class Player extends GameObject {
 
         let fastDropButtonState = event.input.getAction("down");
         let jumpButtonState = event.input.getAction("jump");
+
+        let sJump = event.getSample("jump");
 
         if (!this.fastDropping && 
             fastDropButtonState == InputState.Pressed &&
@@ -113,6 +116,8 @@ export class Player extends GameObject {
 
             this.doubleJump = this.ledgeTimer > 0;
             this.ledgeTimer = 0;
+
+            event.audio.playSample(sJump, JUMP_VOLUME);
         }
         else if (!this.stomped &&
             (jumpButtonState & InputState.DownOrPressed) == 0) {
@@ -323,6 +328,8 @@ export class Player extends GameObject {
 
         // TODO: Remember to reset this
         this.friction.x = 0.025;
+
+        event.audio.playSample(event.getSample("die"), 0.70);
     }
 
 
