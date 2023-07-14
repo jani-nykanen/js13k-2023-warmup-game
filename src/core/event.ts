@@ -1,6 +1,7 @@
 import { Bitmap, createCustomBitmap, processFourColorBitmap } from "../renderer/bitmap.js";
 import { Canvas } from "../renderer/canvas.js";
 import { ActionMap, Input } from "./input.js";
+import { Transition } from "./transition.js";
 
 
 export class CoreEvent {
@@ -15,6 +16,8 @@ export class CoreEvent {
     private readonly canvas : Canvas;
 
     public readonly input : Input;
+    public readonly transition : Transition;
+
 
     // TODO: Rename this to "tick" or something?
     public readonly step = 1.0;
@@ -35,6 +38,7 @@ export class CoreEvent {
     constructor(actions : ActionMap, canvas : Canvas) {
 
         this.input = new Input(actions);
+        this.transition = new Transition();
 
         this.bitmaps = new Map<string, Bitmap> ();
         canvas.setFetchBitmapCallback((name : string) => {

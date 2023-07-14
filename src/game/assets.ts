@@ -82,6 +82,12 @@ export const loadAndProcessBitmaps = (event : CoreEvent) : void => {
     event.loadFourColorBitmap("font", FONT_PATH, 0, 3, 
         (new Array<string>(16*4)).fill("0004"),
         PALETTE);
+    // TODO: Might be a good idea not to have the same bitmap loaded twice, but
+    // pass an array of names, palettes etc. to the function to create multiple
+    // bitmaps from one loaded bitmap
+    event.loadFourColorBitmap("fontYellow", FONT_PATH, 0, 3, 
+        (new Array<string>(16*4)).fill("000A"),
+        PALETTE);
 
     event.createCustomBitmap("clouds", event.screenWidth, 80, createCloudBitmap);
     event.createCustomBitmap("gameover", 112, 20, createYouDieText, true, 192, [255, 0, 0]);

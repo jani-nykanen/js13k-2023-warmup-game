@@ -326,8 +326,8 @@ export class Canvas {
 
         for (let y = 0; y < bmp.height; ++ y) {
 
-            xoff = Math.round(Math.sin((Math.PI*2*latitude) / bmp.height * y + t * (Math.PI*latitude)) * amplitude * t);
-            yoff = Math.round((y - bmp.height/2) * offset);
+            xoff = Math.sin((Math.PI*2*latitude) / bmp.height * y + t * (Math.PI*latitude)) * amplitude * t;
+            yoff = (y - bmp.height/2) * offset;
             
             c.drawImage(bmp, 0, y, bmp.width, 1,
                 (dx + xoff) | 0, (dy + yoff) | 0,

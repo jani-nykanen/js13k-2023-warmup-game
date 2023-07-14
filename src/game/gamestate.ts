@@ -14,7 +14,7 @@ export class GameState {
         let hiscore = 0;
         try {
 
-            hiscore = Number(localStorage.getItem("js13kwarmup__hiscore"));
+            hiscore = Number(window.localStorage.getItem("js13kwarmup__hiscore"));
         }
         catch (e) {
 
@@ -76,7 +76,7 @@ export class GameState {
         this.hiscore = this.score;
         try {
 
-            localStorage.setItem("js13kwarmup__hiscore", String(this.hiscore));
+            window.localStorage.setItem("js13kwarmup__hiscore", String(this.hiscore));
         }
         catch (e) {
 

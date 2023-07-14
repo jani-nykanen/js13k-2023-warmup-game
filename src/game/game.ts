@@ -5,6 +5,7 @@ import { loadAndProcessBitmaps } from "./assets.js"
 import { Stage } from "./stage.js";
 import { GameState } from "./gamestate.js";
 import { InputState } from "../core/input.js";
+import { TransitionType } from "../core/transition.js";
 
 
 export class Game implements Program {
@@ -96,23 +97,35 @@ export class Game implements Program {
         const HEADER_OFFSET = -32;
         const SCORE_TEXT_OFFSET = 0;
         const APPEAR_TIME = 30;
+        const CONTINUE_TEXT_OFFSET = 56;
 
         let bmpGameOver = canvas.getBitmap("gameover");
         let font = canvas.getBitmap("font");
+        let fontYellow = canvas.getBitmap("fontYellow");
 
         let dx =canvas.width/2 - bmpGameOver.width/2;
         let dy = canvas.height/2 - bmpGameOver.height/2 + HEADER_OFFSET
 
-        let t : number;
-
-        canvas.clear("rgba(0, 0, 0, 0.67)");
-
+        let t = 1.0;
         if (this.gameoverTimer < APPEAR_TIME) {
 
-            t = 1.0 - this.gameoverTimer / APPEAR_TIME;
+            t = this.gameoverTimer / APPEAR_TIME;
+        }
+        canvas.clear("rgba(0, 0, 0," + String(t * 0.67) + ")");
+
+        if (this.gameoverTimer < APPEAR_TIME) {
+            
             canvas.drawFunkyWaveEffectBitmap(bmpGameOver,
-                dx, dy, t*t, 32, 2, 16);
+                dx, dy, (1.0 - t)*(1.0 - t), 32, 2, 16);
             return;
+        }
+        else if ( ((((this.gameoverTimer % 60) | 0) / 30) | 0) == 1)  {
+
+            canvas.drawText(fontYellow,
+                "PRESS ENTER",
+                canvas.width/2, 
+                canvas.height/2 + CONTINUE_TEXT_OFFSET,
+                 0, 0, TextAlign.Center);
         }
 
         canvas.drawBitmap(bmpGameOver, dx, dy);
@@ -127,7 +140,6 @@ export class Game implements Program {
             "HISCORE: " + this.state.getHiscore(),
             canvas.width/2, canvas.height/2 + SCORE_TEXT_OFFSET + 16, 
             0, 0, TextAlign.Center);
-
     }
 
 
@@ -142,7 +154,6 @@ export class Game implements Program {
             canvas.width/2, 
             canvas.height/2 - 4,
             0, 0, TextAlign.Center);
-
     }
 
 
@@ -150,22 +161,28 @@ export class Game implements Program {
 
         this.state.reset();
         this.stage.reset(event);
+
         this.gameTimer = 0;
         this.moveSpeed = 0.0;
         this.shakeTimer = 0;
+
         this.gameover = false;
+        this.gameoverTimer = 0;
     }
 
 
     public init(event : CoreEvent) : void {
 
-        // this.stage = new Stage(event);
+        event.transition.activate(false, TransitionType.Fade, 1.0/30.0, null);
     }
 
 
     public update(event : CoreEvent) : void {
 
         const DEATH_SHAKE_TIME = 30;
+
+        if (event.transition.isActive())
+            return;
 
         let startButtonPressed = event.input.getAction("start") == InputState.Pressed;
 
@@ -192,8 +209,9 @@ export class Game implements Program {
 
             if (startButtonPressed) {
 
-                this.reset(event);
-                
+                event.transition.activate(true, TransitionType.Fade, 1.0/30.0, 
+                    (event : CoreEvent) => this.reset(event)
+                );
             }
             return;
         }

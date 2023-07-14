@@ -47,8 +47,9 @@ export class Core {
             if (loaded) {
 
                 this.mainProgram?.update(this.event);
+                this.event.transition.update(this.event);
             }
-
+            
             if (firstFrame) {
 
                 this.event.input.update();
@@ -59,6 +60,7 @@ export class Core {
         if (loaded) {
             
             this.mainProgram?.redraw(this.canvas);
+            this.event.transition.draw(this.canvas);
         }
         else {
 
