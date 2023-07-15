@@ -1,7 +1,6 @@
 import { CoreEvent } from "../core/event.js";
-import { Program } from "../core/program.js";
+import { Program, ProgramParam } from "../core/program.js";
 import { Canvas, TextAlign } from "../renderer/canvas.js";
-import { loadAndProcessBitmaps } from "./assets.js"
 import { Stage } from "./stage.js";
 import { GameState } from "./gamestate.js";
 import { InputState } from "../core/input.js";
@@ -31,11 +30,7 @@ export class Game implements Program {
     private gameStartTimer : number = 29; // TODO: Merge this and gameover timer
 
 
-    constructor(event : CoreEvent) {
-
-        event.audio.setGlobalVolume(0.60); // TODO: Move elsewhere?
-
-        loadAndProcessBitmaps(event);
+    constructor(programParam : ProgramParam, event : CoreEvent) {
 
         // Need to initialize things here to avoid some warnings by Closure compiler...
         this.stage = new Stage(event);
@@ -214,10 +209,7 @@ export class Game implements Program {
     }
 
 
-    public init(event : CoreEvent) : void {
-
-        event.transition.activate(false, TransitionType.Circle, 1.0/60.0, null);
-    }
+    public init(event : CoreEvent) : void { }
 
 
     public update(event : CoreEvent) : void {
@@ -319,4 +311,9 @@ export class Game implements Program {
         }
     }
 
+
+    public dispose() : ProgramParam {
+
+        return undefined;
+    }
 }

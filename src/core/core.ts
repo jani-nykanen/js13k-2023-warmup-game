@@ -1,7 +1,6 @@
 import { Canvas } from "../renderer/canvas.js";
 import { CoreEvent } from "./event.js";
 import { ActionMap } from "./input.js";
-import { Program } from "./program.js";
 
 
 export class Core {
@@ -12,9 +11,6 @@ export class Core {
 
     private timeSum : number = 0.0;
     private oldTime : number = 0.0;
-
-    private mainProgram : Program | undefined = undefined;
-    private initialized : boolean = false;
 
 
     constructor(canvasWidth : number, canvasHeight : number, actions : ActionMap) {
@@ -29,16 +25,16 @@ export class Core {
         const MAX_REFRESH_COUNT = 5; // Needed in the case that window gets deactivated and reactivated much later
         const FRAME_TIME = 16.66667;
 
+        // TODO: Or cap the refresh count, not delta?
         let delta = Math.min(ts - this.oldTime, FRAME_TIME * MAX_REFRESH_COUNT);
         let loaded = this.event.hasLoaded();
 
         this.timeSum += delta;
         this.oldTime = ts;
 
-        if (loaded && !this.initialized) {
+        if (loaded) {
 
-            this.mainProgram?.init(this.event);
-            this.initialized = true;
+            this.event.initializeProgram();
         }
 
         let firstFrame = true;
@@ -46,7 +42,7 @@ export class Core {
 
             if (loaded) {
 
-                this.mainProgram?.update(this.event);
+                this.event.updateProgram();
                 this.event.transition.update(this.event);
             }
             
@@ -59,7 +55,7 @@ export class Core {
         
         if (loaded) {
             
-            this.mainProgram?.redraw(this.canvas);
+            this.event.redrawProgram(this.canvas);
             this.event.transition.draw(this.canvas);
         }
         else {
@@ -72,12 +68,14 @@ export class Core {
     }
 
 
-    public run(programType : Function | undefined) : void {
+    public run(programType : Function | undefined, 
+        initialEvent : ((event : CoreEvent) => void) | undefined = undefined ) : void {
 
-        if (programType != undefined) {
+        if (initialEvent != undefined)
+            initialEvent(this.event);
 
-            this.mainProgram = new programType.prototype.constructor(this.event);
-        }
+        if (programType != undefined) 
+            this.event.changeProgram(programType);
 
         this.loop(0.0);
     }

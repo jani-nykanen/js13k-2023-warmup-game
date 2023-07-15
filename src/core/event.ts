@@ -4,10 +4,10 @@ import { ActionMap, Input } from "./input.js";
 import { Transition } from "./transition.js";
 import { AudioPlayer } from "../audio/audioplayer.js";
 import { Ramp, Sample } from "../audio/sample.js";
+import { Program } from "./program.js";
 
 
 export class CoreEvent {
-
 
 
     // Bitmaps are stored here since they are created here
@@ -18,6 +18,9 @@ export class CoreEvent {
 
     private loadCount : number = 0;
     private loaded : number = 0;
+
+    private activeProgram : Program | undefined = undefined;
+    private initialized : boolean = false;
 
     private readonly canvas : Canvas;
 
@@ -101,4 +104,27 @@ export class CoreEvent {
 
     
     public hasLoaded = () : boolean => this.loaded >= this.loadCount;
+
+
+    public changeProgram(type : Function) : void {
+
+        let param = this.activeProgram?.dispose();
+
+        this.activeProgram = new type.prototype.constructor(param, this);
+        this.initialized = false;
+    }
+
+
+    public initializeProgram() : void {
+
+        if (this.initialized)
+            return;
+
+        this.activeProgram?.init(this);
+        this.initialized = true;
+    }
+
+
+    public updateProgram = () : void => this.activeProgram?.update(this);
+    public redrawProgram = (canvas : Canvas) : void => this.activeProgram?.redraw(canvas);
 }

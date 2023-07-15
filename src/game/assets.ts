@@ -21,7 +21,7 @@ const PALETTE = [
     "005500ff", // E Dark(ish) gren
     "0055aaff", // F Darker blue
     "55aaffff", // G Lighter blue,
-
+    "ffff00ff", // H Yellow,
 ]
 
 const COLOR_TABLE_1 = [
@@ -116,6 +116,14 @@ const createSamples = (event : CoreEvent) : void => {
         [[224, 16]],
         0.80, "sawtooth", Ramp.Linear, 0.20
     );
+    event.createSample("choose",
+        [[256, 4]],
+        0.80, "sawtooth", Ramp.Linear, 0.20
+    );
+    event.createSample("select",
+        [[192, 8]],
+        0.80, "sawtooth", Ramp.Linear, 0.20
+    );
 }
 
 
@@ -132,7 +140,7 @@ export const loadAndProcessBitmaps = (event : CoreEvent) : void => {
     // pass an array of names, palettes etc. to the function to create multiple
     // bitmaps from one loaded bitmap
     event.loadFourColorBitmap("fontYellow", FONT_PATH, 0, 3, 
-        (new Array<string>(16*4)).fill("000A"),
+        (new Array<string>(16*4)).fill("000H"),
         PALETTE);
 
     event.createCustomBitmap("clouds", event.screenWidth, 80, createCloudBitmap);

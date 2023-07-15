@@ -1,6 +1,8 @@
 import { Core } from "./core/core.js";
+import { CoreEvent } from "./core/event.js";
 import { InputAction } from "./core/input.js";
-import { Game } from "./game/game.js";
+import { loadAndProcessBitmaps } from "./game/assets.js";
+import { AudioIntro } from "./game/audiointro.js";
 
 
 window.onload = () => {
@@ -16,6 +18,14 @@ window.onload = () => {
 
             ["jump", {keys: ["Space", "KeyZ", "ArrowUp"]}],
             ["start", {keys: ["Enter"]}],
+            ["select", {keys: ["Enter", "Space"]}],
         ])
-    )).run(Game);
+    )).run(AudioIntro,
+        (event : CoreEvent) : void => {
+
+            event.audio.toggle(false);
+            event.audio.setGlobalVolume(0.60);
+            loadAndProcessBitmaps(event);
+        }
+    );
 }
