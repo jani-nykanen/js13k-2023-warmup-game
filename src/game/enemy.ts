@@ -47,7 +47,7 @@ export class Enemy extends GameObject {
     }
 
 
-    protected die(event : CoreEvent) : boolean {
+    protected die(baseSpeed : number, event : CoreEvent) : boolean {
 
         const GRAVITY = 6.0;
 

@@ -329,9 +329,11 @@ export class Stage {
             p.draw(canvas, bmp1);
         }
 
+        this.player.drawBottomLayer(canvas);
+
         for (let p of this.particles) {
 
-            p.draw(canvas, bmp1);
+            p.draw(canvas);
         }
 
         for (let e of this.enemies) {

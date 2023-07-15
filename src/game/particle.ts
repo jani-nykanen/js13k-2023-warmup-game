@@ -42,7 +42,6 @@ export class Particle extends GameObject {
         this.target = new Vector(speedx, BASE_GRAVITY);
 
         this.timer = 0.0;
-        this.timer = 0.0;
 
         this.color = color;
         this.size = BLOOD_MIN_SIZE + ((Math.random() * (BLOOD_MAX_SIZE - BLOOD_MIN_SIZE + 1)) | 0);
@@ -66,7 +65,7 @@ export class Particle extends GameObject {
     }
 
 
-    public draw(canvas : Canvas, bmp : Bitmap) : void {
+    public draw(canvas : Canvas) : void {
 
         if (!this.exist) 
             return;

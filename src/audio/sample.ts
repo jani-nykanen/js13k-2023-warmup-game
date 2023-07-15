@@ -25,8 +25,6 @@ export class Sample {
     private ramp : Ramp;
     private fadeVolumeFactor : number;
 
-    private oscillator : OscillatorNode | undefined = undefined;
-
 
     constructor(ctx : AudioContext, sequence : number[][], 
         baseVolume = 1.0, type : OscillatorType = "square",
@@ -96,12 +94,6 @@ export class Sample {
         osc.start(time);
         osc.stop(time + timer);
 
-        osc.onended = () => {
-
-            osc.disconnect()
-        }
-
-        this.oscillator?.disconnect();
-        this.oscillator = osc;
+        osc.onended = () => osc.disconnect();
     }
 }

@@ -55,13 +55,16 @@ export class AudioIntro implements Program {
 
     public redraw(canvas: Canvas) : void {
 
-        const COLORS = ["#ffffff", "#000000", "#0055aa"];
+        const SHADOW_OFFSET = 4;
+        const COLORS = ["#ffffff", "#000000", "#5555aa"];
 
-        canvas.clear("#000055");
+        canvas.clear("#0055aa");
 
         drawTextBox(canvas, canvas.getBitmap("font"),
-            TEXT, canvas.width/2, 64, 12, COLORS);
-        this.menu.draw(canvas, 0, 48, 12, true, COLORS);
+            TEXT, canvas.width/2, 64, 12, 
+            COLORS, SHADOW_OFFSET);
+        this.menu.draw(canvas, 0, 48, 12, true, 
+            COLORS, SHADOW_OFFSET);
     }
 
 

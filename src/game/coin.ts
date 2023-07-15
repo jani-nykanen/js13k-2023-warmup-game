@@ -36,7 +36,7 @@ export class Coin extends GameObject {
     }
 
 
-    protected die(event: CoreEvent) : boolean {
+    protected die(baseSpeed : number, event: CoreEvent) : boolean {
         
         return (this.deathTimer += event.step) >= DEATH_TIME;
     }

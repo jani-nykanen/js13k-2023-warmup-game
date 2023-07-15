@@ -60,7 +60,7 @@ export class GameObject {
 
     protected updateEvent(baseSpeed : number, event : CoreEvent) : void {};
 
-    protected die(event : CoreEvent) : boolean { return true; }
+    protected die(baseSpeed : number, event : CoreEvent) : boolean { return true; }
 
 
     public update(baseSpeed : number, event : CoreEvent) : void {
@@ -72,7 +72,7 @@ export class GameObject {
 
             this.updateEvent(baseSpeed, event);
         }
-        else if (this.die(event)) {
+        else if (this.die(baseSpeed, event)) {
 
             this.exist = false;
         }
@@ -89,7 +89,7 @@ export class GameObject {
     }
 
 
-    public draw(canvas : Canvas, bmp : Bitmap) : void {}
+    public draw(canvas : Canvas, bmp? : Bitmap) : void {}
 
 
     protected floorCollisionEvent(event : CoreEvent, special? : boolean) : void {};

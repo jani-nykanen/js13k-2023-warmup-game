@@ -1,9 +1,10 @@
-import { GameObject } from "./gameobject.js";
+import { GameObject, nextObject } from "./gameobject.js";
 import { Vector } from "../common/vector.js";
 import { CoreEvent } from "../core/event.js";
 import { Canvas, Flip } from "../renderer/canvas.js";
 import { Bitmap } from "../renderer/bitmap.js";
 import { InputState } from "../core/input.js";
+import { Dust } from "./dust.js";
 
 
 const INITIAL_FRICTION = 0.15;
@@ -23,6 +24,9 @@ export class Player extends GameObject {
     private fastDropping : boolean = false;
     private stompBonusTimer : number = 0;
 
+    private dust : Array<Dust>;
+    private dustTimer : number = 0.0;
+
 
     constructor(x = 0, y = 0) {
 
@@ -31,6 +35,8 @@ export class Player extends GameObject {
         this.friction = new Vector(INITIAL_FRICTION, 0.15);
         this.hitbox = new Vector(8, 12);
         this.center.y = 2;
+
+        this.dust = new Array<Dust> ();
     }
 
 
@@ -197,12 +203,39 @@ export class Player extends GameObject {
     }
 
 
+    private updateDust(baseSpeed : number, event : CoreEvent) : void {
+
+        const DUST_TIME = 4;
+        const Y_OFF = 6;
+        const DUST_SPEED = 1.0/24.0;
+        const DUST_BASE_SIZE = 10;
+        const EPS = 0.01;
+
+        for (let d of this.dust) {
+
+            d.update(baseSpeed, event);
+        }
+
+        if (this.canJump && Math.abs(this.speed.x) < EPS)
+            return;
+
+        if ((this.dustTimer += event.step) >= DUST_TIME) {
+
+            this.dustTimer -= DUST_TIME;
+
+            nextObject<Dust>(this.dust, Dust).spawn(
+                this.pos.x, this.pos.y + Y_OFF,
+                DUST_BASE_SIZE, DUST_SPEED, "#ffffaa");
+        }
+    }
+
+
     protected updateEvent(baseSpeed : number, event : CoreEvent) : void {
         
         this.control(event);
         this.updateTimers(baseSpeed, event);
         this.animate(event);
-
+        this.updateDust(baseSpeed, event);
 
         if (this.pos.x < 0)
             this.pos.x += event.screenWidth;
@@ -238,13 +271,18 @@ export class Player extends GameObject {
     };
 
 
-    protected die(event : CoreEvent) : boolean {
+    protected die(baseSpeed : number, event : CoreEvent) : boolean {
 
         const ANIM_SPEED = 4;
         const DEATH_GRAVITY = 8.0;
 
         this.spr.animate(0, 3, ANIM_SPEED, event.step);
         this.target.y = DEATH_GRAVITY;
+
+        for (let d of this.dust) {
+
+            d.update(baseSpeed, event);
+        }
 
         return this.pos.y >= event.screenHeight+8;
     }
@@ -256,9 +294,6 @@ export class Player extends GameObject {
         const SOURCE_BOTTOM_X = [32, 16, 32, 16, 32, 0];
         const SOURCE_TOP_Y = [16, 32, 32, 32, 32, 32];
         const SOURCE_BOTTOM_Y = [24, 32, 32, 40, 40, 40];
-
-        if (!this.exist)
-            return;
 
         let frame = this.spr.getFrame();
         let px = Math.round(this.pos.x) - 8 + shiftx;
@@ -303,7 +338,22 @@ export class Player extends GameObject {
     }
 
 
+    public drawBottomLayer(canvas : Canvas) : void {
+
+        if (!this.exist)
+            return;
+
+        for (let d of this.dust) {
+
+            d.draw(canvas);
+        }
+    }
+
+
     public draw(canvas : Canvas, bmp : Bitmap) : void {
+
+        if (!this.exist)
+            return;
 
         if (this.pos.x < 8)
             this.drawBase(canvas, bmp, canvas.width);
@@ -356,5 +406,11 @@ export class Player extends GameObject {
         this.spr.setFrame(0);
 
         this.friction.x = INITIAL_FRICTION;
+
+        this.dustTimer = 0.0;
+        for (let d of this.dust) {
+
+            d.forceDead();
+        }
     }
 }

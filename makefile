@@ -30,3 +30,7 @@ dist: js closure
 	cd ..
 	advzip -z dist.zip
 	rm -rf ./temp
+
+unzip:
+	mkdir -p play
+	unzip -d play dist.zip

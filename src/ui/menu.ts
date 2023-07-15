@@ -64,7 +64,7 @@ export class Menu {
 
 
     public draw(canvas : Canvas, x = 0, y = 0, yoff = 12, box = true, 
-        boxColors : string[] | undefined = undefined) : void {
+        boxColors : string[] | undefined = undefined, boxShadowOffset = 0) : void {
 
         const BOX_OFFSET = 2;
 
@@ -90,7 +90,8 @@ export class Menu {
                 dy - BOX_OFFSET, 
                 w + BOX_OFFSET*2, 
                 h + BOX_OFFSET*2, 
-                boxColors);
+                boxColors,
+                boxShadowOffset);
         }
 
         for (let i = 0; i < this.buttons.length; ++ i) {
