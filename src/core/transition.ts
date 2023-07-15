@@ -18,11 +18,11 @@ export class Transition {
     private active : boolean = false;
     private speed : number = 1.0;
 
-    private callback : ((event : CoreEvent) => void) = (() => {});
+    private callback : ((event : CoreEvent) => void) | undefined;
 
 
     public activate(fadeOut : boolean, type : TransitionType, speed : number, 
-        callback : (event : CoreEvent) => any) : void {
+        callback : ((event : CoreEvent) => void) | undefined) : void {
 
         this.fadeOut = fadeOut;
         this.speed = speed;
@@ -44,7 +44,7 @@ export class Transition {
 
                 this.timer += 1.0;
 
-                if (this.callback != null)
+                if (this.callback != undefined)
                     this.callback(event);
 
                 return;

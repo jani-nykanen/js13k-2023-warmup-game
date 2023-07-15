@@ -51,9 +51,6 @@ export const enum TextAlign {
 };
 
 
-export type Rotation = 0 | 1 | 2 | 3;
-
-
 export class Canvas {
 
 
@@ -61,7 +58,7 @@ export class Canvas {
     private ctx : CanvasRenderingContext2D;
 
     private flipFlag : Flip = Flip.None;
-    private rotationFlag : Rotation = 0;
+    private rotation : number = 0;
 
     private translation : Vector;
 
@@ -253,7 +250,7 @@ export class Canvas {
         sx = 0, sy = 0, sw = bmp.width, sh = bmp.height) : void {
 
         let c = this.ctx;
-        let saveState = this.flipFlag != Flip.None || this.rotationFlag != 0;
+        let saveState = this.flipFlag != Flip.None || this.rotation != 0;
 
         if (bmp == undefined)
             return;
@@ -273,10 +270,10 @@ export class Canvas {
             c.save();
         }
 
-        if (this.rotationFlag != 0) {
+        if (this.rotation != 0) {
 
             c.translate(dx + sw/2, dy + sh/2);
-            c.rotate(this.rotationFlag * Math.PI/2);
+            c.rotate(this.rotation * Math.PI/2);
 
             dx = -sw/2;
             dy = -sh/2;
@@ -304,11 +301,32 @@ export class Canvas {
     }
 
 
+    public drawVerticallyWavingBitmap(bmp : Bitmap | undefined,
+        dx : number, dy : number, period : number, amplitude : number,
+        shift : number) : void {
+
+        let c = this.ctx;
+
+        if (bmp === undefined)
+            return;
+            
+        let y : number;
+        let t : number;
+        for (let x = 0; x < bmp.width; ++ x) {
+
+            t = shift + (x / bmp.width) * period;
+            y = Math.round(Math.sin(t) * amplitude);
+
+            c.drawImage(bmp, x, 0, 1, bmp.height, dx + x, dy + y, 1, bmp.height);
+        }
+    }
+
+
     public drawText(font : Bitmap | undefined, str : string, 
         dx : number, dy : number, 
         xoff = 0.0, yoff = 0.0, align = TextAlign.Left) : void {
 
-        if (font == undefined)
+        if (font === undefined)
             return;
 
         let cw = (font.width / 16) | 0;
@@ -376,29 +394,22 @@ export class Canvas {
     public getBitmap = (name : string) : Bitmap | undefined => this.fetchBitmapCallback(name);
 
 
-    // TODO: It would be better to split this to two different functions
-    public setFlag(flag : "flip" | "rotation", value : Flip | Rotation) : void {
-
-        switch (flag) {
-
-        case "flip":
-            this.flipFlag = value as Flip;
-            break;
-
-        case "rotation":
-            this.rotationFlag = value as Rotation;
-            break;
-
-        default:
-            break;
-        }
-    }
-
-
     public resetFlags() : void {
 
         this.flipFlag = Flip.None;
-        this.rotationFlag = 0;
+        this.rotation = 0;
+    }
+
+
+    public setFlippingFlag(flip : Flip = Flip.None) : void {
+
+        this.flipFlag = flip;
+    }
+
+
+    public setRotation(angle : number = 0) : void {
+
+        this.rotation = angle;
     }
 
 

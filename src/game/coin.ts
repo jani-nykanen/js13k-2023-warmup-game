@@ -83,7 +83,7 @@ export class Coin extends GameObject {
         let px = Math.round(this.pos.x) - sw/2;
         let py = Math.round(this.pos.y) - 8;
 
-        canvas.setFlag("flip", frame == 3 ? Flip.Horizontal : Flip.None);
+        canvas.setFlippingFlag(frame == 3 ? Flip.Horizontal : Flip.None);
         canvas.drawBitmap(bmp, px, py, sx, 16, sw, 16);
         canvas.resetFlags();
     }
@@ -99,7 +99,7 @@ export class Coin extends GameObject {
             this.dying = true;
             this.deathTimer = 0.0;
 
-            event.audio.playSample(event.getSample("coin"), 0.60);
+            event.audio.playSample(event.getSample("coin"), 0.50);
 
             return true;
         }

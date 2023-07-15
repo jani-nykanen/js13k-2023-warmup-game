@@ -63,6 +63,12 @@ export class Input {
             }
             this.keyEvent(e.code, InputState.Released);
         });
+
+        window.addEventListener("contextmenu", (e : MouseEvent) => e.preventDefault());
+        // The bottom two are mostly needed if this game is ever being
+        // run inside an iframe
+        window.addEventListener("mousemove", () => window.focus());
+        window.addEventListener("mousedown", () => window.focus());
     }
 
 

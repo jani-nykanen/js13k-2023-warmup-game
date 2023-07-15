@@ -138,7 +138,7 @@ export class Platform {
 
         for (let x = 0; x < this.width; ++ x) {
 
-            canvas.setFlag("flip", Flip.None);
+            canvas.setFlippingFlag(Flip.None);
 
             middle = this.tiles[x];
             // Gap
@@ -177,7 +177,7 @@ export class Platform {
             sx = right != middle ? 8 : 0;
             if (right != middle) {
 
-                canvas.setFlag("flip", Flip.Horizontal);
+                canvas.setFlippingFlag(Flip.Horizontal);
             }
             canvas.drawBitmap(bmp, x*16 + 8, p, sx, 0, 8, 8); // Grass
             canvas.drawBitmap(bmp, x*16 + 8, p, sx + 16, 0, 8, 8); // Grass shadow

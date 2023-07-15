@@ -27,6 +27,9 @@ export class Game implements Program {
     private gameover : boolean = false;
     private gameoverTimer : number = 0;
 
+    private gameStarted : boolean = false;
+    private gameStartTimer : number = 29; // TODO: Merge this and gameover timer
+
 
     constructor(event : CoreEvent) {
 
@@ -151,13 +154,37 @@ export class Game implements Program {
 
         let font = canvas.getBitmap("font");
 
-        // If gameoverTimer is high enough:
         canvas.clear("rgba(0, 0, 0, 0.67)");
 
         canvas.drawText(font, "GAME PAUSED", 
             canvas.width/2, 
             canvas.height/2 - 4,
             0, 0, TextAlign.Center);
+    }
+
+
+    private drawGameStart(canvas : Canvas) : void {
+
+        const WAVE_PERIOD = Math.PI*2;
+
+        let font = canvas.getBitmap("font");
+        let fontYellow = canvas.getBitmap("fontYellow");
+        let bmpLogo = canvas.getBitmap("logo");
+
+        let shift = (this.gameStartTimer / 60) * WAVE_PERIOD;
+
+        canvas.clear("rgba(0, 0, 0, 0.67)");
+
+        canvas.drawVerticallyWavingBitmap(bmpLogo, 0, 0, WAVE_PERIOD, 4, shift);
+        canvas.drawText(font, "$2023 JANI NYK%NEN", canvas.width/2, canvas.height-9, 0, 0, TextAlign.Center);
+
+        if (this.gameStartTimer >= 30) {
+
+            canvas.drawText(fontYellow, "PRESS ENTER", 
+                canvas.width/2, 
+                canvas.height - 56,
+                0, 0, TextAlign.Center);
+        }
     }
 
 
@@ -175,24 +202,45 @@ export class Game implements Program {
     }
 
 
+    private updateGameStartScreen(event : CoreEvent) : void {
+
+        this.gameStartTimer = (this.gameStartTimer + event.step) % 60;
+
+        if (event.input.getAction("start") == InputState.Pressed) {
+
+            event.audio.playSample(event.getSample("start"), 0.70);
+            this.gameStarted = true;
+        }
+    }
+
+
     public init(event : CoreEvent) : void {
 
-        event.transition.activate(false, TransitionType.Circle, 1.0/30.0, null);
+        event.transition.activate(false, TransitionType.Circle, 1.0/60.0, null);
     }
 
 
     public update(event : CoreEvent) : void {
+
+        // TODO: Split to shorter functions
 
         const DEATH_SHAKE_TIME = 30;
 
         if (event.transition.isActive())
             return;
 
+        if (!this.gameStarted) {
+
+            this.updateGameStartScreen(event);
+            return;
+        }
+
         let startButtonPressed = event.input.getAction("start") == InputState.Pressed;
 
         if (startButtonPressed && !this.gameover) {
 
             this.paused = !this.paused;
+            event.audio.playSample(event.getSample("pause"), 0.70);
         }
         if (this.paused) 
             return;
@@ -213,13 +261,14 @@ export class Game implements Program {
             if (startButtonPressed &&
                 this.gameoverTimer >= GAMEOVER_TEXT_APPEAR_TIME) {
 
+                event.audio.playSample(event.getSample("start"), 0.70);
+
                 event.transition.activate(true, TransitionType.Fade, 1.0/30.0, 
                     (event : CoreEvent) => this.reset(event)
                 );
             }
             return;
         }
-
         
         if (!this.gameover && this.stage.isPlayerDead()) {
 
@@ -249,6 +298,12 @@ export class Game implements Program {
         this.stage.draw(canvas);
 
         canvas.moveTo();
+        if (!this.gameStarted) {
+
+            this.drawGameStart(canvas);
+            return;
+        }
+
         if (this.stage.isPlayerDead()) {
 
             this.drawGameOver(canvas);

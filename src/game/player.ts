@@ -1,7 +1,7 @@
 import { GameObject } from "./gameobject.js";
 import { Vector } from "../common/vector.js";
 import { CoreEvent } from "../core/event.js";
-import { Canvas, Flip, Rotation } from "../renderer/canvas.js";
+import { Canvas, Flip } from "../renderer/canvas.js";
 import { Bitmap } from "../renderer/bitmap.js";
 import { InputState } from "../core/input.js";
 
@@ -264,11 +264,11 @@ export class Player extends GameObject {
         let px = Math.round(this.pos.x) - 8 + shiftx;
         let py = Math.round(this.pos.y) - 8 + 1 + shifty;
         let rot : number;
-        canvas.setFlag("flip", this.flip);
+        canvas.setFlippingFlag(this.flip);
 
         if (this.dying) {
 
-            canvas.setFlag("rotation", this.spr.getFrame() as Rotation);
+            canvas.setRotation( this.spr.getFrame());
             canvas.drawBitmap(bmp, px, py, 32, 16, 16, 16);
             canvas.resetFlags();
             return;
@@ -280,7 +280,7 @@ export class Player extends GameObject {
             if (this.flip == Flip.Horizontal)
                 rot = 3 - rot;
 
-            canvas.setFlag("rotation", rot as Rotation) ;
+            canvas.setRotation( rot) ;
             canvas.drawBitmap(bmp, px, py, 
                 0, 48, 16, 16);
             canvas.resetFlags();

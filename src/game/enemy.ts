@@ -280,7 +280,7 @@ export class Enemy extends GameObject {
             stepy = 1;
         }
 
-        canvas.setFlag("flip", flip);
+        canvas.setFlippingFlag(flip);
         switch (this.enemyType) {
 
             case EnemyType.MovingGroundEnemy:

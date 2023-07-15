@@ -74,6 +74,22 @@ const createYouDieText = (c : CanvasRenderingContext2D, width : number, height :
 }
 
 
+const createGameLogo = (c : CanvasRenderingContext2D, width : number, height : number) : void => {
+
+    c.textAlign = "center";
+
+    c.font = "bold 12px Arial";
+    c.fillText("A TOTALLY AWESOME", width/2, 32);
+
+    c.font = "bold 16px Arial";
+    c.fillText("JS13K 2023", width/2, 50);
+
+    c.font = "bold 24px Arial";
+    c.fillText("WARMUP", width/2, 72);
+    c.fillText("GAME", width/2, 92);
+}
+
+
 const createSamples = (event : CoreEvent) : void => {
 
     event.createSample("die",
@@ -91,6 +107,14 @@ const createSamples = (event : CoreEvent) : void => {
     event.createSample("kill",
         [[320, 4], [192, 6], [96, 10]],
         0.70, "square", Ramp.Linear, 0.20
+    );
+    event.createSample("pause",
+        [[160, 12]],
+        0.60, "square", Ramp.Linear, 0.20
+    );
+    event.createSample("start",
+        [[224, 16]],
+        0.80, "sawtooth", Ramp.Linear, 0.20
     );
 }
 
@@ -113,6 +137,7 @@ export const loadAndProcessBitmaps = (event : CoreEvent) : void => {
 
     event.createCustomBitmap("clouds", event.screenWidth, 80, createCloudBitmap);
     event.createCustomBitmap("gameover", 112, 20, createYouDieText, true, 192, [255, 0, 0]);
+    event.createCustomBitmap("logo", 144, 128, createGameLogo, true, 96, [170, 255, 255]);
 
     createSamples(event);
 }
